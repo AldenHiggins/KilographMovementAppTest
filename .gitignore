@@ -5,3 +5,9 @@ Assets/Materials.meta
 Assets/Materials/
 Assets/Scenes/
 Temp/
+Assets/Plugins/
+Assets/Plugins.meta
+Assets/Scripts.meta
+*.csproj
+*.sln
+*.apk
