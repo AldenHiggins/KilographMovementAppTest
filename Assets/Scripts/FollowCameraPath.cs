@@ -14,7 +14,7 @@ public class FollowCameraPath : MonoBehaviour
 	
 	void Update ()
     {
-        float distanceThisFrame = cameraSpeed * 10 * Time.deltaTime;
+        float distanceThisFrame = cameraSpeed * 100 * Time.deltaTime;
         print("Distance: " + distanceThisFrame);
         print("Delta time: " + Time.deltaTime);
         // Get the next element to head towards
@@ -41,6 +41,6 @@ public class FollowCameraPath : MonoBehaviour
         directionToNextElement.Normalize();
 
         // Calculate the distance that you need to move
-        mainCamera.transform.position += directionToNextElement * distanceThisFrame;
+        mainCamera.GetComponent<Rigidbody>().velocity = directionToNextElement * distanceThisFrame;
 	}
 }
