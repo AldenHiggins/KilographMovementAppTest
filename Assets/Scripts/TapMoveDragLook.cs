@@ -20,6 +20,7 @@ public class TapMoveDragLook : MonoBehaviour
     public float kJoystickSpeed = 0.5f;
     public bool kInverse = false;
     public float kMovementSpeed = 10;
+    public float moveOrDragDistance;
 
     Transform ownTransform;
     Transform cameraTransform;
@@ -38,21 +39,15 @@ public class TapMoveDragLook : MonoBehaviour
     Vector3 targetPoint;
     Rect joystickRect;
 
-
-
-
-
     void MoveFromJoystick()
     {
         isMovingToTarget = false;
         Vector2 offset = leftFingerCurrentPoint - leftFingerStartPoint;
-        if (offset.magnitude > 10)
+        if (offset.magnitude > moveOrDragDistance)
             offset = offset.normalized * 10;
 
         characterController.SimpleMove(kJoystickSpeed * ownTransform.TransformDirection(new Vector3(offset.x, 0, offset.y)));
     }
-
-
 
     void MoveToTarget()
     {
@@ -65,8 +60,6 @@ public class TapMoveDragLook : MonoBehaviour
             isMovingToTarget = false;
     }
 
-
-
     void SetTarget(Vector2 screenPos)
     {
         Ray ray = _camera.ScreenPointToRay(new Vector3(screenPos.x, screenPos.y));
@@ -78,8 +71,6 @@ public class TapMoveDragLook : MonoBehaviour
             isMovingToTarget = true;
         }
     }
-
-
 
     void OnTouchBegan(int fingerId, Vector2 pos)
     {
@@ -96,21 +87,20 @@ public class TapMoveDragLook : MonoBehaviour
         }
     }
 
-
-
     void OnTouchEnded(int fingerId)
     {
+        print("Finger ID: " + fingerId);
+        print("Right finger ID: " + rightFingerId);
         if (fingerId == leftFingerId)
             leftFingerId = -1;
         else if (fingerId == rightFingerId)
         {
+            print("Got here, is rotating: " + isRotating);
             rightFingerId = -1;
             if (false == isRotating)
                 SetTarget(rightFingerStartPoint);
         }
     }
-
-
 
     void OnTouchMoved(int fingerId, Vector2 pos)
     {
@@ -120,6 +110,7 @@ public class TapMoveDragLook : MonoBehaviour
         {
             rightFingerCurrentPoint = pos;
 
+            print("Movement magnitude: " + (pos - rightFingerStartPoint).magnitude);
             if ((pos - rightFingerStartPoint).magnitude > 2)
                 isRotating = true;
         }
