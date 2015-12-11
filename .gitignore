@@ -12,3 +12,4 @@ Assets/Scripts.meta
 *.sln
 *.apk
 *.suo
+obj/
