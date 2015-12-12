@@ -89,13 +89,10 @@ public class TapMoveDragLook : MonoBehaviour
 
     void OnTouchEnded(int fingerId)
     {
-        print("Finger ID: " + fingerId);
-        print("Right finger ID: " + rightFingerId);
         if (fingerId == leftFingerId)
             leftFingerId = -1;
         else if (fingerId == rightFingerId)
         {
-            print("Got here, is rotating: " + isRotating);
             rightFingerId = -1;
             if (false == isRotating)
                 SetTarget(rightFingerStartPoint);
@@ -111,7 +108,7 @@ public class TapMoveDragLook : MonoBehaviour
             rightFingerCurrentPoint = pos;
 
             print("Movement magnitude: " + (pos - rightFingerStartPoint).magnitude);
-            if ((pos - rightFingerStartPoint).magnitude > 2)
+            if ((pos - rightFingerStartPoint).magnitude > moveOrDragDistance)
                 isRotating = true;
         }
     }
@@ -185,7 +182,6 @@ public class TapMoveDragLook : MonoBehaviour
         rotation.SetFromToRotation(cameraTransform.InverseTransformDirection(lastDirectionInGlobal),
                                                     cameraTransform.InverseTransformDirection(currentDirectionInGlobal));
         cameraTransform.localRotation = Quaternion.Euler(kInverse ? rotation.eulerAngles.x : -rotation.eulerAngles.x, 0, 0) * cameraTransform.localRotation;
-
         rightFingerLastPoint = rightFingerCurrentPoint;
     }
 
