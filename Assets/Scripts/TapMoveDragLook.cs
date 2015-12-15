@@ -55,16 +55,6 @@ public class TapMoveDragLook : MonoBehaviour
         cameraWidthChangeSpeed = 10 * 1 / cameraWidthChangeSpeed;
     }
 
-    void MoveFromJoystick()
-    {
-        isMovingToTarget = false;
-        Vector2 offset = leftFingerCurrentPoint - leftFingerStartPoint;
-        if (offset.magnitude > moveOrDragDistance)
-            offset = offset.normalized * 10;
-
-        characterController.SimpleMove(kJoystickSpeed * ownTransform.TransformDirection(new Vector3(offset.x, 0, offset.y)));
-    }
-
     void MoveToTarget()
     {
         Vector3 difference = targetPoint - ownTransform.position;
@@ -90,12 +80,7 @@ public class TapMoveDragLook : MonoBehaviour
 
     void OnTouchBegan(int fingerId, Vector2 pos)
     {
-        if (leftFingerId == -1 && kJoystikEnabled && joystickRect.Contains(pos))
-        {
-            leftFingerId = fingerId;
-            leftFingerStartPoint = leftFingerCurrentPoint = pos;
-        }
-        else if (rightFingerId == -1)
+        if (rightFingerId == -1)
         {
             rightFingerStartPoint = rightFingerCurrentPoint = rightFingerLastPoint = pos;
             rightFingerId = fingerId;
@@ -105,9 +90,7 @@ public class TapMoveDragLook : MonoBehaviour
 
     void OnTouchEnded(int fingerId)
     {
-        if (fingerId == leftFingerId)
-            leftFingerId = -1;
-        else if (fingerId == rightFingerId)
+        if (fingerId == rightFingerId)
         {
             rightFingerId = -1;
             if (false == isRotating)
@@ -117,9 +100,7 @@ public class TapMoveDragLook : MonoBehaviour
 
     void OnTouchMoved(int fingerId, Vector2 pos)
     {
-        if (fingerId == leftFingerId)
-            leftFingerCurrentPoint = pos;
-        else if (fingerId == rightFingerId)
+        if (fingerId == rightFingerId)
         {
             rightFingerCurrentPoint = pos;
             if ((pos - rightFingerStartPoint).magnitude > moveOrDragDistance)
@@ -142,28 +123,24 @@ public class TapMoveDragLook : MonoBehaviour
         {
             int count = Input.touchCount;
 
-            for (int i = 0; i < count; i++)
-            {
-                Touch touch = Input.GetTouch(i);
+            Touch touch = Input.GetTouch(0);
 
-                if (touch.phase == TouchPhase.Began)
-                    OnTouchBegan(touch.fingerId, touch.position);
-                else if (touch.phase == TouchPhase.Moved)
-                    OnTouchMoved(touch.fingerId, touch.position);
-                else if (touch.phase == TouchPhase.Canceled || touch.phase == TouchPhase.Ended)
-                    OnTouchEnded(touch.fingerId);
-            }
+            if (touch.phase == TouchPhase.Began)
+                OnTouchBegan(touch.fingerId, touch.position);
+            else if (touch.phase == TouchPhase.Moved)
+                OnTouchMoved(touch.fingerId, touch.position);
+            else if (touch.phase == TouchPhase.Canceled || touch.phase == TouchPhase.Ended)
+                OnTouchEnded(touch.fingerId);
         }
 
-        if (leftFingerId != -1)
-            MoveFromJoystick();
-        else if (isMovingToTarget)
+        if (isMovingToTarget)
             MoveToTarget();
 
         if (rightFingerId != -1 && isRotating)
             Rotate();
-
     }
+
+
 
 
 
