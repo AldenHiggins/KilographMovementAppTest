@@ -13,7 +13,7 @@ using UnityEngine;
 using System.Collections;
 
 [RequireComponent(typeof(CharacterController))]
-public class TapMoveDragLook : MonoBehaviour
+public class TapInput : MonoBehaviour
 {
     public bool kJoystikEnabled = true;
     public float kJoystickSpeed = 0.5f;
