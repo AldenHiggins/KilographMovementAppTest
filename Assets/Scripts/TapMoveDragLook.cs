@@ -15,7 +15,6 @@ using System.Collections;
 [RequireComponent(typeof(CharacterController))]
 public class TapMoveDragLook : MonoBehaviour
 {
-
     public bool kJoystikEnabled = true;
     public float kJoystickSpeed = 0.5f;
     public bool kInverse = false;
@@ -40,6 +39,21 @@ public class TapMoveDragLook : MonoBehaviour
     bool isMovingToTarget = false;
     Vector3 targetPoint;
     Rect joystickRect;
+
+    void Start()
+    {
+        joystickRect = new Rect(Screen.width * 0.02f, Screen.height * 0.02f, Screen.width * 0.2f, Screen.height * 0.2f);
+        ownTransform = transform;
+        //cameraTransform = Camera.main.transform;
+        cameraTransform = transform;
+        characterController = GetComponent<CharacterController>();
+        //_camera = Camera.main;
+        _camera = GetComponent<Camera>();
+
+        // Invert and scale the camera speed
+        cameraHeightChangeSpeed = 10 * 1 / cameraHeightChangeSpeed;
+        cameraWidthChangeSpeed = 10 * 1 / cameraWidthChangeSpeed;
+    }
 
     void MoveFromJoystick()
     {
@@ -113,21 +127,6 @@ public class TapMoveDragLook : MonoBehaviour
         }
     }
 
-
-
-    void Start()
-    {
-        joystickRect = new Rect(Screen.width * 0.02f, Screen.height * 0.02f, Screen.width * 0.2f, Screen.height * 0.2f);
-        ownTransform = transform;
-        //cameraTransform = Camera.main.transform;
-        cameraTransform = transform;
-        characterController = GetComponent<CharacterController>();
-        //_camera = Camera.main;
-        _camera = GetComponent<Camera>();
-    }
-
-
-
     void Update()
     {
         if (Application.isEditor)
@@ -179,7 +178,13 @@ public class TapMoveDragLook : MonoBehaviour
         Vector2 screenVectorChange = rightFingerCurrentPoint - rightFingerLastPoint;
 
         Vector3 cameraEuler = cameraTransform.eulerAngles;
-        cameraTransform.localRotation = Quaternion.Euler(cameraEuler.x + (screenVectorChange.y / 10), cameraEuler.y + (-1 * screenVectorChange.x / 10), cameraEuler.z);
+        // Scale the camera speed based on the screen height/width
+        float newCameraHeightSpeed = cameraHeightChangeSpeed / 480 * Screen.height;
+        float newCameraWidthSpeed = cameraWidthChangeSpeed / 850 * Screen.width;
+        cameraTransform.localRotation = Quaternion.Euler(
+            cameraEuler.x + (screenVectorChange.y / newCameraHeightSpeed),
+            cameraEuler.y + (-1 * screenVectorChange.x / newCameraWidthSpeed),
+            cameraEuler.z);
 
         //Quaternion rotation = new Quaternion();
         //rotation.SetFromToRotation(lastDirectionInGlobal, currentDirectionInGlobal);
