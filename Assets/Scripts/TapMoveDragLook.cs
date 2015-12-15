@@ -21,6 +21,8 @@ public class TapMoveDragLook : MonoBehaviour
     public bool kInverse = false;
     public float kMovementSpeed = 10;
     public float moveOrDragDistance;
+    public float cameraHeightChangeSpeed = 1;
+    public float cameraWidthChangeSpeed = 1;
 
     Transform ownTransform;
     Transform cameraTransform;
@@ -106,8 +108,6 @@ public class TapMoveDragLook : MonoBehaviour
         else if (fingerId == rightFingerId)
         {
             rightFingerCurrentPoint = pos;
-
-            print("Movement magnitude: " + (pos - rightFingerStartPoint).magnitude);
             if ((pos - rightFingerStartPoint).magnitude > moveOrDragDistance)
                 isRotating = true;
         }
@@ -173,16 +173,33 @@ public class TapMoveDragLook : MonoBehaviour
         Vector3 lastDirectionInGlobal = _camera.ScreenPointToRay(rightFingerLastPoint).direction;
         Vector3 currentDirectionInGlobal = _camera.ScreenPointToRay(rightFingerCurrentPoint).direction;
 
-        Quaternion rotation = new Quaternion();
-        rotation.SetFromToRotation(lastDirectionInGlobal, currentDirectionInGlobal);
+        print("Last x: " + rightFingerLastPoint.x + " y: " + rightFingerLastPoint.y);
+        print("Current x: " + rightFingerCurrentPoint.x + " y: " + rightFingerCurrentPoint.y);
 
-        ownTransform.rotation = ownTransform.rotation * Quaternion.Euler(0, kInverse ? rotation.eulerAngles.y : -rotation.eulerAngles.y, 0);
+        Vector2 screenVectorChange = rightFingerCurrentPoint - rightFingerLastPoint;
+
+        Vector3 cameraEuler = cameraTransform.eulerAngles;
+        cameraTransform.localRotation = Quaternion.Euler(cameraEuler.x + (screenVectorChange.y / 10), cameraEuler.y + (-1 * screenVectorChange.x / 10), cameraEuler.z);
+
+        //Quaternion rotation = new Quaternion();
+        //rotation.SetFromToRotation(lastDirectionInGlobal, currentDirectionInGlobal);
+
+        //ownTransform.rotation = ownTransform.rotation * Quaternion.Euler(0, kInverse ? rotation.eulerAngles.y : -rotation.eulerAngles.y, 0);
 
         // and now the rotation in the camera's local space
-        rotation.SetFromToRotation(cameraTransform.InverseTransformDirection(lastDirectionInGlobal),
-                                                    cameraTransform.InverseTransformDirection(currentDirectionInGlobal));
-        cameraTransform.localRotation = Quaternion.Euler(kInverse ? rotation.eulerAngles.x : -rotation.eulerAngles.x, 0, 0) * cameraTransform.localRotation;
+        //rotation.SetFromToRotation(cameraTransform.InverseTransformDirection(lastDirectionInGlobal), cameraTransform.InverseTransformDirection(currentDirectionInGlobal));
+        // Print out rotation
+        //if (rotation.eulerAngles.x != 0)
+        //{
+        //    //print("Rotation x: " + rotation.eulerAngles.x + " y: " + rotation.eulerAngles.y);
+        //}
+        
+        //cameraTransform.localRotation = Quaternion.Euler(kInverse ? rotation.eulerAngles.x : -rotation.eulerAngles.x, 0, 0) * cameraTransform.localRotation;
+
+        // 0 out z rotation
+        //cameraTransform.localRotation = Quaternion.Euler(cameraTransform.localRotation.eulerAngles.x, cameraTransform.localRotation.eulerAngles.y, 0);
+
+
         rightFingerLastPoint = rightFingerCurrentPoint;
     }
-
 }
