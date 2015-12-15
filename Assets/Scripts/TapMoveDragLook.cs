@@ -169,12 +169,8 @@ public class TapMoveDragLook : MonoBehaviour
 
     void Rotate()
     {
-        Vector3 lastDirectionInGlobal = _camera.ScreenPointToRay(rightFingerLastPoint).direction;
-        Vector3 currentDirectionInGlobal = _camera.ScreenPointToRay(rightFingerCurrentPoint).direction;
-
-        print("Last x: " + rightFingerLastPoint.x + " y: " + rightFingerLastPoint.y);
-        print("Current x: " + rightFingerCurrentPoint.x + " y: " + rightFingerCurrentPoint.y);
-
+        // Get the x,y change of the finger as it's sliding across the screen and rotate the camera based on that
+        // scaled by the cameraChangeSpeed variables
         Vector2 screenVectorChange = rightFingerCurrentPoint - rightFingerLastPoint;
 
         Vector3 cameraEuler = cameraTransform.eulerAngles;
@@ -185,25 +181,6 @@ public class TapMoveDragLook : MonoBehaviour
             cameraEuler.x + (screenVectorChange.y / newCameraHeightSpeed),
             cameraEuler.y + (-1 * screenVectorChange.x / newCameraWidthSpeed),
             cameraEuler.z);
-
-        //Quaternion rotation = new Quaternion();
-        //rotation.SetFromToRotation(lastDirectionInGlobal, currentDirectionInGlobal);
-
-        //ownTransform.rotation = ownTransform.rotation * Quaternion.Euler(0, kInverse ? rotation.eulerAngles.y : -rotation.eulerAngles.y, 0);
-
-        // and now the rotation in the camera's local space
-        //rotation.SetFromToRotation(cameraTransform.InverseTransformDirection(lastDirectionInGlobal), cameraTransform.InverseTransformDirection(currentDirectionInGlobal));
-        // Print out rotation
-        //if (rotation.eulerAngles.x != 0)
-        //{
-        //    //print("Rotation x: " + rotation.eulerAngles.x + " y: " + rotation.eulerAngles.y);
-        //}
-        
-        //cameraTransform.localRotation = Quaternion.Euler(kInverse ? rotation.eulerAngles.x : -rotation.eulerAngles.x, 0, 0) * cameraTransform.localRotation;
-
-        // 0 out z rotation
-        //cameraTransform.localRotation = Quaternion.Euler(cameraTransform.localRotation.eulerAngles.x, cameraTransform.localRotation.eulerAngles.y, 0);
-
 
         rightFingerLastPoint = rightFingerCurrentPoint;
     }
