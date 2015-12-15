@@ -40,9 +40,18 @@ public class TapMoveDragLook : MonoBehaviour
     Vector3 targetPoint;
     Rect joystickRect;
 
-    // Determines the rotation mode
+    // Rotating around object variables
     public bool rotateAroundObject = true;
     public GameObject rotationObject;
+
+    public float rotationSpeedScaling;
+    public float rotateAroundObjectDistance;
+
+    private float currentXAroundObject = 0;
+    private float currentYAroundObject = 0;
+
+    public float objectRotationMaxX;
+    public float objectRotationMinX;
 
     void Start()
     {
@@ -146,7 +155,6 @@ public class TapMoveDragLook : MonoBehaviour
             
         }
 
-
         if (rightFingerId != -1 && isRotating)
         {
             if (rotateAroundObject)
@@ -161,8 +169,7 @@ public class TapMoveDragLook : MonoBehaviour
             
     }
 
-    private float currentXAroundObject = 0;
-    private float currentYAroundObject = 0;
+    
 
 
     void RotateAroundObject()
@@ -170,20 +177,13 @@ public class TapMoveDragLook : MonoBehaviour
         Vector2 screenVectorChange = rightFingerCurrentPoint - rightFingerLastPoint;
 
         // Scale the camera speed based on the screen height/width
-        float newCameraHeightSpeed = (cameraHeightChangeSpeed * 5) / 480 * Screen.height;
-        float newCameraWidthSpeed = (cameraWidthChangeSpeed * 5) / 850 * Screen.width;
+        float newCameraHeightSpeed = (cameraHeightChangeSpeed * rotationSpeedScaling) / 480 * Screen.height;
+        float newCameraWidthSpeed = (cameraWidthChangeSpeed * rotationSpeedScaling) / 850 * Screen.width;
         currentXAroundObject += (screenVectorChange.y / newCameraHeightSpeed);
         currentYAroundObject += (screenVectorChange.x / newCameraWidthSpeed);
 
-        // Wrap the X within given range
-        if (currentXAroundObject > 30 && currentXAroundObject < 90)
-        {
-            currentXAroundObject = 30;
-        }
-        else if (currentXAroundObject < 0)
-        {
-            currentXAroundObject += 360;
-        }
+        // Clamp the X within given range
+        currentXAroundObject = Mathf.Clamp(currentXAroundObject, objectRotationMinX, objectRotationMaxX);
 
         // Wrap Y around 360
         if (currentYAroundObject > 360)
@@ -195,10 +195,8 @@ public class TapMoveDragLook : MonoBehaviour
             currentYAroundObject += 360;
         }
 
-        cameraTransform.position = rotationObject.transform.position + (Quaternion.Euler(currentXAroundObject, currentYAroundObject, 0.0f) * new Vector3(0.0f, 0.0f, 60.0f));
+        cameraTransform.position = rotationObject.transform.position + (Quaternion.Euler(currentXAroundObject, currentYAroundObject, 0.0f) * new Vector3(0.0f, 0.0f, rotateAroundObjectDistance));
         cameraTransform.LookAt(rotationObject.transform);
-        print("X: " + currentXAroundObject);
-        print("Y: " + currentYAroundObject);
     }
 
 
