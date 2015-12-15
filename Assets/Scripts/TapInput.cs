@@ -82,40 +82,111 @@ public class TapInput : MonoBehaviour
         }
     }
 
-    // Used to fade the screen to black
-    void OnGUI()
+    void Update()
     {
-        if (alphaFadeValue > 0.0f)
+        // Handle all input
+        if (Application.isEditor)
         {
-            alphaFadeValue -= Mathf.Clamp01(Time.deltaTime / (1 / fadeSpeed));
-            GUI.color = new Color(alphaFadeValue, alphaFadeValue, alphaFadeValue, alphaFadeValue);
-            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), blackTexture);
+            if (Input.GetMouseButtonDown(0))
+            {
+                OnTouchBegan(0, Input.mousePosition);
+            }
+            else if (Input.GetMouseButtonUp(0))
+            {
+                OnTouchEnded(0);
+            }
+            else if (leftFingerId != -1 || rightFingerId != -1)
+            {
+                OnTouchMoved(0, Input.mousePosition);
+            }
+        }
+        else
+        {
+            Touch touch = Input.GetTouch(0);
+
+            if (touch.phase == TouchPhase.Began)
+            {
+                OnTouchBegan(touch.fingerId, touch.position);
+            }
+            else if (touch.phase == TouchPhase.Moved)
+            {
+                OnTouchMoved(touch.fingerId, touch.position);
+            }
+            else if (touch.phase == TouchPhase.Canceled || touch.phase == TouchPhase.Ended)
+            {
+                OnTouchEnded(touch.fingerId);
+            }
+        }
+
+
+        // Perform rotations if necessary
+        if (rightFingerId != -1 && isRotating)
+        {
+            if (rotateAroundObject)
+            {
+                RotateAroundObject();
+            }
+            else
+            {
+                Rotate();
+            }
         }
     }
 
-    void MoveToTarget()
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////   TOUCH CALLBACKS   ////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    void OnTouchBegan(int fingerId, Vector2 pos)
     {
-        Vector3 difference = targetPoint - ownTransform.position;
-
-        characterController.SimpleMove(difference.normalized * kMovementSpeed);
-
-        Vector3 horizontalDifference = new Vector3(difference.x, 0, difference.z);
-        if (horizontalDifference.magnitude < 0.1f)
-            isMovingToTarget = false;
-    }
-
-    void SetTarget(Vector2 screenPos)
-    {
-        Ray ray = _camera.ScreenPointToRay(new Vector3(screenPos.x, screenPos.y));
-        RaycastHit hit;
-        int layerMask = 1 << 11; // Ground
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask))
+        if (rightFingerId == -1)
         {
-            targetPoint = hit.point;
-            isMovingToTarget = true;
+            rightFingerStartPoint = rightFingerCurrentPoint = rightFingerLastPoint = pos;
+            rightFingerId = fingerId;
+            isRotating = false;
         }
     }
 
+    void OnTouchEnded(int fingerId)
+    {
+        if (fingerId == rightFingerId)
+        {
+            rightFingerId = -1;
+            if (isRotating == false)
+            {
+                if (rotateAroundObject)
+                {
+                    // Select a hotspot if one hasn't been selected already
+                    if (selectedHotspot == null)
+                    {
+                        SelectHotspot(rightFingerStartPoint);
+                    }
+                    // If a hotspot has been selected check if the user is now going to hit a button
+                    else
+                    {
+                        SelectButton(rightFingerStartPoint);
+                    }   
+                }
+                else
+                {
+                    SetTarget(rightFingerStartPoint);
+                }
+            }
+                
+        }
+    }
+
+    void OnTouchMoved(int fingerId, Vector2 pos)
+    {
+        rightFingerCurrentPoint = pos;
+        if ((pos - rightFingerStartPoint).magnitude > moveOrDragDistance)
+        {
+            isRotating = true;
+        }
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////   SELECTION LOGIC   ////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////
     void SelectHotspot(Vector2 screenPos)
     {
         Ray ray = _camera.ScreenPointToRay(new Vector3(screenPos.x, screenPos.y));
@@ -124,7 +195,7 @@ public class TapInput : MonoBehaviour
         if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask))
         {
             GameObject hitObject = hit.collider.gameObject;
-            
+
             // Don't do anything if this hotspot is already selected
             if (gameObject == rotationObject)
             {
@@ -136,7 +207,7 @@ public class TapInput : MonoBehaviour
 
             // Iterate through children and enable them
             enableDisableChildren(selectedHotspot, true);
-           
+
 
             //rotationObject = hitObject;
 
@@ -188,105 +259,9 @@ public class TapInput : MonoBehaviour
         }
     }
 
-    void OnTouchBegan(int fingerId, Vector2 pos)
-    {
-        if (rightFingerId == -1)
-        {
-            rightFingerStartPoint = rightFingerCurrentPoint = rightFingerLastPoint = pos;
-            rightFingerId = fingerId;
-            isRotating = false;
-        }
-    }
-
-    void OnTouchEnded(int fingerId)
-    {
-        if (fingerId == rightFingerId)
-        {
-            rightFingerId = -1;
-            if (isRotating == false)
-            {
-                if (rotateAroundObject)
-                {
-                    // Select a hotspot if one hasn't been selected already
-                    if (selectedHotspot == null)
-                    {
-                        SelectHotspot(rightFingerStartPoint);
-                    }
-                    // If a hotspot has been selected check if the user is now going to hit a button
-                    else
-                    {
-                        SelectButton(rightFingerStartPoint);
-                    }
-                    
-                }
-                else
-                {
-                    SetTarget(rightFingerStartPoint);
-                }
-            }
-                
-        }
-    }
-
-    void OnTouchMoved(int fingerId, Vector2 pos)
-    {
-        if (fingerId == rightFingerId)
-        {
-            rightFingerCurrentPoint = pos;
-            if ((pos - rightFingerStartPoint).magnitude > moveOrDragDistance)
-                isRotating = true;
-        }
-    }
-
-    void Update()
-    {
-        if (Application.isEditor)
-        {
-            if (Input.GetMouseButtonDown(0))
-                OnTouchBegan(0, Input.mousePosition);
-            else if (Input.GetMouseButtonUp(0))
-                OnTouchEnded(0);
-            else if (leftFingerId != -1 || rightFingerId != -1)
-                OnTouchMoved(0, Input.mousePosition);
-        }
-        else
-        {
-            int count = Input.touchCount;
-
-            Touch touch = Input.GetTouch(0);
-
-            if (touch.phase == TouchPhase.Began)
-                OnTouchBegan(touch.fingerId, touch.position);
-            else if (touch.phase == TouchPhase.Moved)
-                OnTouchMoved(touch.fingerId, touch.position);
-            else if (touch.phase == TouchPhase.Canceled || touch.phase == TouchPhase.Ended)
-                OnTouchEnded(touch.fingerId);
-        }
-
-        if (isMovingToTarget)
-        {
-            if (!rotateAroundObject)
-            {
-                MoveToTarget();
-            }
-            
-        }
-
-        if (rightFingerId != -1 && isRotating)
-        {
-            if (rotateAroundObject)
-            {
-                RotateAroundObject();
-            }
-            else
-            {
-                Rotate();
-            }
-        }
-            
-    }
-
-    
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////       ROTATION       ///////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////
     void RotateAroundObject()
     {
         Vector2 screenVectorChange = rightFingerCurrentPoint - rightFingerLastPoint;
@@ -313,13 +288,7 @@ public class TapInput : MonoBehaviour
         moveToRotationObject(Quaternion.Euler(currentXAroundObject, currentYAroundObject, 0.0f));
     }
 
-    void moveToRotationObject(Quaternion rotationAroundObject)
-    {
-        cameraTransform.position = rotationObject.transform.position + (rotationAroundObject * new Vector3(0.0f, 0.0f, rotateAroundObjectDistance));
-        cameraTransform.LookAt(rotationObject.transform);
-    }
-
-
+   
     void Rotate()
     {
         // Get the x,y change of the finger as it's sliding across the screen and rotate the camera based on that
@@ -338,6 +307,16 @@ public class TapInput : MonoBehaviour
         rightFingerLastPoint = rightFingerCurrentPoint;
     }
 
+
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////   HELPER FUNCTIONS   ///////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    void moveToRotationObject(Quaternion rotationAroundObject)
+    {
+        cameraTransform.position = rotationObject.transform.position + (rotationAroundObject * new Vector3(0.0f, 0.0f, rotateAroundObjectDistance));
+        cameraTransform.LookAt(rotationObject.transform);
+    }
+
     void enableDisableChildren(GameObject theObject, bool enable)
     {
         // Iterate through children and enable them
@@ -345,5 +324,42 @@ public class TapInput : MonoBehaviour
         {
             selectedHotspot.transform.GetChild(childIndex).gameObject.SetActive(enable);
         }
+    }
+
+    // Used to fade the screen to black
+    void OnGUI()
+    {
+        if (alphaFadeValue > 0.0f)
+        {
+            alphaFadeValue -= Mathf.Clamp01(Time.deltaTime / (1 / fadeSpeed));
+            GUI.color = new Color(alphaFadeValue, alphaFadeValue, alphaFadeValue, alphaFadeValue);
+            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), blackTexture);
+        }
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////     TAP TO MOVE      ///////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    void SetTarget(Vector2 screenPos)
+    {
+        Ray ray = _camera.ScreenPointToRay(new Vector3(screenPos.x, screenPos.y));
+        RaycastHit hit;
+        int layerMask = 1 << 11; // Ground
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask))
+        {
+            targetPoint = hit.point;
+            isMovingToTarget = true;
+        }
+    }
+
+    void MoveToTarget()
+    {
+        Vector3 difference = targetPoint - ownTransform.position;
+
+        characterController.SimpleMove(difference.normalized * kMovementSpeed);
+
+        Vector3 horizontalDifference = new Vector3(difference.x, 0, difference.z);
+        if (horizontalDifference.magnitude < 0.1f)
+            isMovingToTarget = false;
     }
 }
