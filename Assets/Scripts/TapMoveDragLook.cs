@@ -53,6 +53,11 @@ public class TapMoveDragLook : MonoBehaviour
     public float objectRotationMaxX;
     public float objectRotationMinX;
 
+    // Variables to support fading to black
+    private float alphaFadeValue;
+    public Texture2D blackTexture;
+    public float fadeSpeed;
+
     void Start()
     {
         joystickRect = new Rect(Screen.width * 0.02f, Screen.height * 0.02f, Screen.width * 0.2f, Screen.height * 0.2f);
@@ -66,6 +71,22 @@ public class TapMoveDragLook : MonoBehaviour
         // Invert and scale the camera speed
         cameraHeightChangeSpeed = 10 * 1 / cameraHeightChangeSpeed;
         cameraWidthChangeSpeed = 10 * 1 / cameraWidthChangeSpeed;
+
+        if (rotateAroundObject)
+        {
+            moveToRotationObject(Quaternion.identity);
+        }
+    }
+
+    void OnGUI()
+    {
+        if (alphaFadeValue > 0.0f)
+        {
+            // Set up the screen to be able to be faded to black later on
+            alphaFadeValue -= Mathf.Clamp01(Time.deltaTime / (1 / fadeSpeed));
+            GUI.color = new Color(alphaFadeValue, alphaFadeValue, alphaFadeValue, alphaFadeValue);
+            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), blackTexture);
+        }
     }
 
     void MoveToTarget()
@@ -91,6 +112,35 @@ public class TapMoveDragLook : MonoBehaviour
         }
     }
 
+
+    void SelectHotspot(Vector2 screenPos)
+    {
+        Ray ray = _camera.ScreenPointToRay(new Vector3(screenPos.x, screenPos.y));
+        RaycastHit hit;
+        int layerMask = 1 << 12; // Hotspots
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask))
+        {
+            GameObject hitObject = hit.collider.gameObject;
+
+            if (gameObject == rotationObject)
+            {
+                print("Hit this button!");
+                return;
+            }
+
+            rotationObject = hitObject;
+
+            moveToRotationObject(Quaternion.identity);
+
+            // Zero out the x/y
+            currentXAroundObject = 0;
+            currentYAroundObject = 0;
+
+            // Bump up the alpha fade value
+            alphaFadeValue = 1.3f;
+        }
+    }
+
     void OnTouchBegan(int fingerId, Vector2 pos)
     {
         if (rightFingerId == -1)
@@ -106,8 +156,18 @@ public class TapMoveDragLook : MonoBehaviour
         if (fingerId == rightFingerId)
         {
             rightFingerId = -1;
-            if (false == isRotating)
-                SetTarget(rightFingerStartPoint);
+            if (isRotating == false)
+            {
+                if (rotateAroundObject)
+                {
+                    SelectHotspot(rightFingerStartPoint);
+                }
+                else
+                {
+                    SetTarget(rightFingerStartPoint);
+                }
+            }
+                
         }
     }
 
@@ -170,8 +230,6 @@ public class TapMoveDragLook : MonoBehaviour
     }
 
     
-
-
     void RotateAroundObject()
     {
         Vector2 screenVectorChange = rightFingerCurrentPoint - rightFingerLastPoint;
@@ -195,7 +253,12 @@ public class TapMoveDragLook : MonoBehaviour
             currentYAroundObject += 360;
         }
 
-        cameraTransform.position = rotationObject.transform.position + (Quaternion.Euler(currentXAroundObject, currentYAroundObject, 0.0f) * new Vector3(0.0f, 0.0f, rotateAroundObjectDistance));
+        moveToRotationObject(Quaternion.Euler(currentXAroundObject, currentYAroundObject, 0.0f));
+    }
+
+    void moveToRotationObject(Quaternion rotationAroundObject)
+    {
+        cameraTransform.position = rotationObject.transform.position + (rotationAroundObject * new Vector3(0.0f, 0.0f, rotateAroundObjectDistance));
         cameraTransform.LookAt(rotationObject.transform);
     }
 
