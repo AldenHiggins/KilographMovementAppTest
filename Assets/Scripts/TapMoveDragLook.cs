@@ -40,6 +40,10 @@ public class TapMoveDragLook : MonoBehaviour
     Vector3 targetPoint;
     Rect joystickRect;
 
+    // Determines the rotation mode
+    public bool rotateAroundObject = true;
+    public GameObject rotationObject;
+
     void Start()
     {
         joystickRect = new Rect(Screen.width * 0.02f, Screen.height * 0.02f, Screen.width * 0.2f, Screen.height * 0.2f);
@@ -134,14 +138,68 @@ public class TapMoveDragLook : MonoBehaviour
         }
 
         if (isMovingToTarget)
-            MoveToTarget();
+        {
+            if (!rotateAroundObject)
+            {
+                MoveToTarget();
+            }
+            
+        }
+
 
         if (rightFingerId != -1 && isRotating)
-            Rotate();
+        {
+            if (rotateAroundObject)
+            {
+                RotateAroundObject();
+            }
+            else
+            {
+                Rotate();
+            }
+        }
+            
     }
 
+    private float currentXAroundObject = 0;
+    private float currentYAroundObject = 0;
 
 
+    void RotateAroundObject()
+    {
+        Vector2 screenVectorChange = rightFingerCurrentPoint - rightFingerLastPoint;
+
+        // Scale the camera speed based on the screen height/width
+        float newCameraHeightSpeed = (cameraHeightChangeSpeed * 5) / 480 * Screen.height;
+        float newCameraWidthSpeed = (cameraWidthChangeSpeed * 5) / 850 * Screen.width;
+        currentXAroundObject += (screenVectorChange.y / newCameraHeightSpeed);
+        currentYAroundObject += (screenVectorChange.x / newCameraWidthSpeed);
+
+        // Wrap the X within given range
+        if (currentXAroundObject > 30 && currentXAroundObject < 90)
+        {
+            currentXAroundObject = 30;
+        }
+        else if (currentXAroundObject < 0)
+        {
+            currentXAroundObject += 360;
+        }
+
+        // Wrap Y around 360
+        if (currentYAroundObject > 360)
+        {
+            currentYAroundObject -= 360;
+        }
+        else if (currentYAroundObject < 0)
+        {
+            currentYAroundObject += 360;
+        }
+
+        cameraTransform.position = rotationObject.transform.position + (Quaternion.Euler(currentXAroundObject, currentYAroundObject, 0.0f) * new Vector3(0.0f, 0.0f, 60.0f));
+        cameraTransform.LookAt(rotationObject.transform);
+        print("X: " + currentXAroundObject);
+        print("Y: " + currentYAroundObject);
+    }
 
 
     void Rotate()
