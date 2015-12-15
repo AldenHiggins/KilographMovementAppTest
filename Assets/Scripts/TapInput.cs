@@ -58,6 +58,10 @@ public class TapInput : MonoBehaviour
     public Texture2D blackTexture;
     public float fadeSpeed;
 
+    // Variables to select hotspot UI features
+    private bool hotspotSelected;
+    private GameObject selectedHotspot;
+
     void Start()
     {
         joystickRect = new Rect(Screen.width * 0.02f, Screen.height * 0.02f, Screen.width * 0.2f, Screen.height * 0.2f);
@@ -78,11 +82,11 @@ public class TapInput : MonoBehaviour
         }
     }
 
+    // Used to fade the screen to black
     void OnGUI()
     {
         if (alphaFadeValue > 0.0f)
         {
-            // Set up the screen to be able to be faded to black later on
             alphaFadeValue -= Mathf.Clamp01(Time.deltaTime / (1 / fadeSpeed));
             GUI.color = new Color(alphaFadeValue, alphaFadeValue, alphaFadeValue, alphaFadeValue);
             GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), blackTexture);
@@ -112,7 +116,6 @@ public class TapInput : MonoBehaviour
         }
     }
 
-
     void SelectHotspot(Vector2 screenPos)
     {
         Ray ray = _camera.ScreenPointToRay(new Vector3(screenPos.x, screenPos.y));
@@ -121,23 +124,67 @@ public class TapInput : MonoBehaviour
         if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask))
         {
             GameObject hitObject = hit.collider.gameObject;
-
+            
+            // Don't do anything if this hotspot is already selected
             if (gameObject == rotationObject)
             {
-                print("Hit this button!");
                 return;
             }
 
-            rotationObject = hitObject;
 
-            moveToRotationObject(Quaternion.identity);
+            selectedHotspot = hitObject;
 
-            // Zero out the x/y
-            currentXAroundObject = 0;
-            currentYAroundObject = 0;
+            // Iterate through children and enable them
+            enableDisableChildren(selectedHotspot, true);
+           
 
-            // Bump up the alpha fade value
-            alphaFadeValue = 1.3f;
+            //rotationObject = hitObject;
+
+            //moveToRotationObject(Quaternion.identity);
+
+            //// Zero out the x/y
+            //currentXAroundObject = 0;
+            //currentYAroundObject = 0;
+
+            //// Bump up the alpha fade value
+            //alphaFadeValue = 1.3f;
+        }
+    }
+
+    void SelectButton(Vector2 screenPos)
+    {
+        Ray ray = _camera.ScreenPointToRay(new Vector3(screenPos.x, screenPos.y));
+        RaycastHit hit;
+        int layerMask = 1 << 5; // UI
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask))
+        {
+            print("Got here!!");
+            GameObject hitObject = hit.collider.gameObject;
+
+            SkyboxButton skybox = hitObject.GetComponent<SkyboxButton>();
+
+            if (skybox == null)
+            {
+                return;
+            }
+
+            // Enable the skybox
+            skybox.skyboxObject.SetActive(true);
+
+            for (int childIndex = 0; childIndex < skybox.sceneObjects.Length; childIndex++)
+            {
+                skybox.sceneObjects[childIndex].SetActive(false);
+            }
+
+            cameraTransform.position = Vector3.zero;
+            cameraTransform.rotation = Quaternion.identity;
+
+            rotateAroundObject = false;
+        }
+        else
+        {
+            enableDisableChildren(selectedHotspot, false);
+            selectedHotspot = null;
         }
     }
 
@@ -160,7 +207,17 @@ public class TapInput : MonoBehaviour
             {
                 if (rotateAroundObject)
                 {
-                    SelectHotspot(rightFingerStartPoint);
+                    // Select a hotspot if one hasn't been selected already
+                    if (selectedHotspot == null)
+                    {
+                        SelectHotspot(rightFingerStartPoint);
+                    }
+                    // If a hotspot has been selected check if the user is now going to hit a button
+                    else
+                    {
+                        SelectButton(rightFingerStartPoint);
+                    }
+                    
                 }
                 else
                 {
@@ -279,5 +336,14 @@ public class TapInput : MonoBehaviour
             cameraEuler.z);
 
         rightFingerLastPoint = rightFingerCurrentPoint;
+    }
+
+    void enableDisableChildren(GameObject theObject, bool enable)
+    {
+        // Iterate through children and enable them
+        for (int childIndex = 0; childIndex < theObject.transform.childCount; childIndex++)
+        {
+            selectedHotspot.transform.GetChild(childIndex).gameObject.SetActive(enable);
+        }
     }
 }
