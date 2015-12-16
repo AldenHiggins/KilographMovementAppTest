@@ -60,6 +60,11 @@ public class TapInput : MonoBehaviour
     public float objectRotationMaxX;
     public float objectRotationMinX;
 
+    public float objectRotationMaxY;
+    public float objectRotationMinY;
+
+    public Vector3 startingRotation;
+
     // Variables to select hotspot UI features
     private bool hotspotSelected;
     private GameObject selectedHotspot;
@@ -73,6 +78,7 @@ public class TapInput : MonoBehaviour
     private bool isMovingToTarget;
     private bool skyboxMode;
     private bool cameraFollowMode;
+
 
     void Start()
     {
@@ -90,7 +96,9 @@ public class TapInput : MonoBehaviour
 
         if (rotateAroundObject)
         {
-            moveToRotationObject(Quaternion.identity);
+            currentYAroundObject = startingRotation.y;
+            currentXAroundObject = startingRotation.x;
+            moveToRotationObject(Quaternion.Euler(startingRotation));
         }
 
         // Adds a listener for when you click the back button
@@ -308,10 +316,11 @@ public class TapInput : MonoBehaviour
     void selectCameraBackButton()
     {
         CameraPathButton button = cameraBackButton.GetComponent<CameraPathButton>();
+
         rotationObject = mainRotationObject;
-        moveToRotationObject(Quaternion.identity);
-        currentXAroundObject = 0;
-        currentYAroundObject = 0;
+        moveToRotationObject(Quaternion.Euler(startingRotation));
+        currentXAroundObject = startingRotation.x;
+        currentYAroundObject = startingRotation.y;
         rotateAroundObject = true;
         cameraFollowMode = false;
 
@@ -335,9 +344,9 @@ public class TapInput : MonoBehaviour
         SkyboxButton backSkybox = backButton.GetComponent<SkyboxButton>();
 
         rotationObject = mainRotationObject;
-        moveToRotationObject(Quaternion.identity);
-        currentXAroundObject = 0;
-        currentYAroundObject = 0;
+        moveToRotationObject(Quaternion.Euler(startingRotation));
+        currentXAroundObject = startingRotation.x;
+        currentYAroundObject = startingRotation.y;
         rotateAroundObject = true;
         skyboxMode = false;
         // Disable the skybox
@@ -370,15 +379,8 @@ public class TapInput : MonoBehaviour
         // Clamp the X within given range
         currentXAroundObject = Mathf.Clamp(currentXAroundObject, objectRotationMinX, objectRotationMaxX);
 
-        // Wrap Y around 360
-        if (currentYAroundObject > 360)
-        {
-            currentYAroundObject -= 360;
-        }
-        else if (currentYAroundObject < 0)
-        {
-            currentYAroundObject += 360;
-        }
+        // Clamp the X within given range
+        currentYAroundObject = Mathf.Clamp(currentYAroundObject, objectRotationMinY, objectRotationMaxY);
 
         moveToRotationObject(Quaternion.Euler(currentXAroundObject, currentYAroundObject, 0.0f));
     }
