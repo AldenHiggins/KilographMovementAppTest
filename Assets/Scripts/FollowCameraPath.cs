@@ -15,8 +15,6 @@ public class FollowCameraPath : MonoBehaviour
 	void Update ()
     {
         float distanceThisFrame = cameraSpeed * 100 * Time.deltaTime;
-        print("Distance: " + distanceThisFrame);
-        print("Delta time: " + Time.deltaTime);
         // Get the next element to head towards
         GameObject nextElement = transform.GetChild(currentElementIndex).gameObject;
         // Find the direction to that next element

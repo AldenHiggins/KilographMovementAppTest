@@ -64,14 +64,15 @@ public class TapInput : MonoBehaviour
     private bool hotspotSelected;
     private GameObject selectedHotspot;
 
-    // Back button to exit out of video/skybox
+    // Back button to exit out of cameraMode/skybox
     public GameObject backButton;
+    public GameObject cameraBackButton;
 
     // State of the application
     private bool isRotating;
     private bool isMovingToTarget;
     private bool skyboxMode;
-    private bool backButtonUp;
+    private bool cameraFollowMode;
 
     void Start()
     {
@@ -96,6 +97,11 @@ public class TapInput : MonoBehaviour
         backButton.GetComponent<Button>().onClick.AddListener(selectBackButton);
         // Scale backButton based on screen
         backButton.GetComponent<RectTransform>().sizeDelta = new Vector2(Screen.width / 3, Screen.height / 6);
+
+        // Adds a listener for when you click the back button in camera follow mode
+        cameraBackButton.GetComponent<Button>().onClick.AddListener(selectCameraBackButton);
+        // Scale backButton based on screen
+        cameraBackButton.GetComponent<RectTransform>().sizeDelta = new Vector2(Screen.width / 3, Screen.height / 6);
     }
 
     void Update()
@@ -133,7 +139,6 @@ public class TapInput : MonoBehaviour
                 OnTouchEnded(touch.fingerId);
             }
         }
-
 
         // Perform rotations if necessary
         if (rightFingerId != -1 && isRotating)
@@ -186,6 +191,18 @@ public class TapInput : MonoBehaviour
                     backButton.SetActive(false);
                 }
             }
+            // If the user is in camera follow mode wait for tap then bring up the back button
+            else if (cameraFollowMode)
+            {
+                if (!cameraBackButton.activeSelf)
+                {
+                    cameraBackButton.SetActive(true);
+                }
+                else
+                {
+                    cameraBackButton.SetActive(false);
+                }
+            }
             else
             {
                 SelectHotspot(rightFingerStartPoint);
@@ -205,27 +222,6 @@ public class TapInput : MonoBehaviour
     /////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////   SELECTION LOGIC   ////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////
-
-    void selectBackButton()
-    {
-        SkyboxButton backSkybox = backButton.GetComponent<SkyboxButton>();
-
-        rotationObject = mainRotationObject;
-        moveToRotationObject(Quaternion.identity);
-        currentXAroundObject = 0;
-        currentYAroundObject = 0;
-        rotateAroundObject = true;
-        skyboxMode = false;
-        // Disable the skybox
-        backSkybox.skyboxObject.SetActive(false);
-        // Disable the backbutton
-        backButton.SetActive(false);
-
-        for (int childIndex = 0; childIndex < backSkybox.sceneObjects.Length; childIndex++)
-        {
-            backSkybox.sceneObjects[childIndex].SetActive(true);
-        }
-    }
     void SelectHotspot(Vector2 screenPos)
     {
         Ray ray = _camera.ScreenPointToRay(new Vector3(screenPos.x, screenPos.y));
@@ -241,23 +237,10 @@ public class TapInput : MonoBehaviour
                 return;
             }
 
-
             selectedHotspot = hitObject;
 
             // Iterate through children and enable them
             enableDisableChildren(selectedHotspot, true);
-
-
-            //rotationObject = hitObject;
-
-            //moveToRotationObject(Quaternion.identity);
-
-            //// Zero out the x/y
-            //currentXAroundObject = 0;
-            //currentYAroundObject = 0;
-
-            //// Bump up the alpha fade value
-            //alphaFadeValue = 1.3f;
         }
     }
 
@@ -285,7 +268,7 @@ public class TapInput : MonoBehaviour
 
                 cameraTransform.position = Vector3.zero;
                 cameraTransform.rotation = Quaternion.identity;
-
+                alphaFadeValue = 1.2f;
                 rotateAroundObject = false;
                 return;
             }
@@ -301,9 +284,11 @@ public class TapInput : MonoBehaviour
 
                 camPath.path.gameObject.SetActive(true);
                 cameraTransform.transform.position = camPath.path.transform.GetChild(0).position;
+                cameraTransform.rotation = Quaternion.identity;
                 rotateAroundObject = false;
                 rotationObject = null;
                 alphaFadeValue = 1.0f;
+                cameraFollowMode = true;
             }
         }
         else
@@ -316,6 +301,58 @@ public class TapInput : MonoBehaviour
             
         }
     }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////     BACK BUTTON CALLBACKS     ///////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    void selectCameraBackButton()
+    {
+        CameraPathButton button = cameraBackButton.GetComponent<CameraPathButton>();
+        rotationObject = mainRotationObject;
+        moveToRotationObject(Quaternion.identity);
+        currentXAroundObject = 0;
+        currentYAroundObject = 0;
+        rotateAroundObject = true;
+        cameraFollowMode = false;
+
+        // Disable the path
+        button.path.gameObject.SetActive(false);
+        cameraBackButton.SetActive(false);
+
+        // Enable all the hotspots
+        for (int childIndex = 0; childIndex < button.objectsToDeselect.Length; childIndex++)
+        {
+            button.objectsToDeselect[childIndex].SetActive(true);
+        }
+
+        // Remove all velocity from the rigidbody
+        GetComponent<Rigidbody>().velocity = Vector3.zero;
+        alphaFadeValue = 1.2f;
+    }
+
+    void selectBackButton()
+    {
+        SkyboxButton backSkybox = backButton.GetComponent<SkyboxButton>();
+
+        rotationObject = mainRotationObject;
+        moveToRotationObject(Quaternion.identity);
+        currentXAroundObject = 0;
+        currentYAroundObject = 0;
+        rotateAroundObject = true;
+        skyboxMode = false;
+        // Disable the skybox
+        backSkybox.skyboxObject.SetActive(false);
+        // Disable the backbutton
+        backButton.SetActive(false);
+
+        for (int childIndex = 0; childIndex < backSkybox.sceneObjects.Length; childIndex++)
+        {
+            backSkybox.sceneObjects[childIndex].SetActive(true);
+        }
+
+        alphaFadeValue = 1.2f;
+    }
+
 
     /////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////       ROTATION       ///////////////////////////////////////
