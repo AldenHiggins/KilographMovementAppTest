@@ -10,38 +10,45 @@
 
 
 using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 [RequireComponent(typeof(CharacterController))]
 public class TapInput : MonoBehaviour
 {
-    public bool kJoystikEnabled = true;
-    public float kJoystickSpeed = 0.5f;
-    public bool kInverse = false;
+    // Movement variables
+    private Vector3 targetPoint;
     public float kMovementSpeed = 10;
+
+    // Variables to support fading to black
+    private float alphaFadeValue;
+    public Texture2D blackTexture;
+    public float fadeSpeed;
+
+    // The player's transform
+    private Transform ownTransform;
+    private CharacterController characterController;
+
+    // Camera variables
+    private Transform cameraTransform;
+    private Camera _camera;
+
+    // Denotes whether a touch is occuring or not
+    private int rightFingerId = -1;
+    // Positions of the touch/swipe
+    private Vector2 rightFingerStartPoint;
+    private Vector2 rightFingerCurrentPoint;
+    private Vector2 rightFingerLastPoint;
+
+    // Threshold between a tap and a swipe
     public float moveOrDragDistance;
+    // Control the speed of camera movement
     public float cameraHeightChangeSpeed = 1;
     public float cameraWidthChangeSpeed = 1;
 
-    Transform ownTransform;
-    Transform cameraTransform;
-    CharacterController characterController;
-    Camera _camera;
-
-    int leftFingerId = -1;
-    int rightFingerId = -1;
-    Vector2 leftFingerStartPoint;
-    Vector2 leftFingerCurrentPoint;
-    Vector2 rightFingerStartPoint;
-    Vector2 rightFingerCurrentPoint;
-    Vector2 rightFingerLastPoint;
-    bool isRotating;
-    bool isMovingToTarget = false;
-    Vector3 targetPoint;
-    Rect joystickRect;
-
     // Rotating around object variables
     public bool rotateAroundObject = true;
+    private GameObject mainRotationObject;
     public GameObject rotationObject;
 
     public float rotationSpeedScaling;
@@ -53,18 +60,22 @@ public class TapInput : MonoBehaviour
     public float objectRotationMaxX;
     public float objectRotationMinX;
 
-    // Variables to support fading to black
-    private float alphaFadeValue;
-    public Texture2D blackTexture;
-    public float fadeSpeed;
-
     // Variables to select hotspot UI features
     private bool hotspotSelected;
     private GameObject selectedHotspot;
 
+    // Back button to exit out of video/skybox
+    public GameObject backButton;
+
+    // State of the application
+    private bool isRotating;
+    private bool isMovingToTarget;
+    private bool skyboxMode;
+    private bool backButtonUp;
+
     void Start()
     {
-        joystickRect = new Rect(Screen.width * 0.02f, Screen.height * 0.02f, Screen.width * 0.2f, Screen.height * 0.2f);
+        mainRotationObject = rotationObject;
         ownTransform = transform;
         //cameraTransform = Camera.main.transform;
         cameraTransform = transform;
@@ -80,6 +91,9 @@ public class TapInput : MonoBehaviour
         {
             moveToRotationObject(Quaternion.identity);
         }
+
+        // Adds a listener for when you click the back button
+        backButton.GetComponent<Button>().onClick.AddListener(selectBackButton);
     }
 
     void Update()
@@ -95,7 +109,7 @@ public class TapInput : MonoBehaviour
             {
                 OnTouchEnded(0);
             }
-            else if (leftFingerId != -1 || rightFingerId != -1)
+            else if (rightFingerId != -1)
             {
                 OnTouchMoved(0, Input.mousePosition);
             }
@@ -148,30 +162,33 @@ public class TapInput : MonoBehaviour
 
     void OnTouchEnded(int fingerId)
     {
-        if (fingerId == rightFingerId)
+        rightFingerId = -1;
+        if (isRotating == false)
         {
-            rightFingerId = -1;
-            if (isRotating == false)
+            // If a hotspot has been selected check if the user is now going to hit a button
+            if (selectedHotspot != null)
             {
-                if (rotateAroundObject)
+                SelectButton(rightFingerStartPoint);
+                return;
+            }
+
+            print("Got here!!");
+            // If the user is in skyboxMode wait for tap then bring up the back button
+            if (skyboxMode)
+            {
+                if (!backButton.activeSelf)
                 {
-                    // Select a hotspot if one hasn't been selected already
-                    if (selectedHotspot == null)
-                    {
-                        SelectHotspot(rightFingerStartPoint);
-                    }
-                    // If a hotspot has been selected check if the user is now going to hit a button
-                    else
-                    {
-                        SelectButton(rightFingerStartPoint);
-                    }   
+                    backButton.SetActive(true);
                 }
                 else
                 {
-                    SetTarget(rightFingerStartPoint);
+                    backButton.SetActive(false);
                 }
             }
-                
+            else
+            {
+                SelectHotspot(rightFingerStartPoint);
+            }
         }
     }
 
@@ -187,6 +204,26 @@ public class TapInput : MonoBehaviour
     /////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////   SELECTION LOGIC   ////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////
+
+    void selectBackButton()
+    {
+        print("Got in here!!");
+        SkyboxButton backSkybox = backButton.GetComponent<SkyboxButton>();
+
+        rotationObject = mainRotationObject;
+        moveToRotationObject(Quaternion.identity);
+        rotateAroundObject = true;
+        skyboxMode = false;
+        // Disable the skybox
+        backSkybox.skyboxObject.SetActive(false);
+        // Disable the backbutton
+        backButton.SetActive(false);
+
+        for (int childIndex = 0; childIndex < backSkybox.sceneObjects.Length; childIndex++)
+        {
+            backSkybox.sceneObjects[childIndex].SetActive(true);
+        }
+    }
     void SelectHotspot(Vector2 screenPos)
     {
         Ray ray = _camera.ScreenPointToRay(new Vector3(screenPos.x, screenPos.y));
@@ -229,7 +266,7 @@ public class TapInput : MonoBehaviour
         int layerMask = 1 << 5; // UI
         if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask))
         {
-            print("Got here!!");
+            print("Raycast hit!!");
             GameObject hitObject = hit.collider.gameObject;
 
             SkyboxButton skybox = hitObject.GetComponent<SkyboxButton>();
@@ -240,6 +277,7 @@ public class TapInput : MonoBehaviour
             }
 
             // Enable the skybox
+            skyboxMode = true;
             skybox.skyboxObject.SetActive(true);
 
             for (int childIndex = 0; childIndex < skybox.sceneObjects.Length; childIndex++)
@@ -254,8 +292,12 @@ public class TapInput : MonoBehaviour
         }
         else
         {
-            enableDisableChildren(selectedHotspot, false);
-            selectedHotspot = null;
+            if (selectedHotspot != null)
+            {
+                enableDisableChildren(selectedHotspot, false);
+                selectedHotspot = null;
+            }
+            
         }
     }
 
