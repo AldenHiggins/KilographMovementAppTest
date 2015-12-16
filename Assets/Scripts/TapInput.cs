@@ -104,7 +104,7 @@ public class TapInput : MonoBehaviour
         // Adds a listener for when you click the back button
         backButton.GetComponent<Button>().onClick.AddListener(selectBackButton);
         // Scale backButton based on screen
-        backButton.GetComponent<RectTransform>().sizeDelta = new Vector2(Screen.width / 3, Screen.height / 6);
+        //backButton.GetComponent<RectTransform>().sizeDelta = new Vector2(Screen.width / 3, Screen.height / 6);
 
         // Adds a listener for when you click the back button in camera follow mode
         cameraBackButton.GetComponent<Button>().onClick.AddListener(selectCameraBackButton);
@@ -245,10 +245,27 @@ public class TapInput : MonoBehaviour
                 return;
             }
 
-            selectedHotspot = hitObject;
+            // If a skybox button has been hit enter skybox mode
+            SkyboxButton skybox = hitObject.GetComponent<SkyboxButton>();
+            if (skybox != null)
+            {
+                // Enable the skybox
+                skyboxMode = true;
+                skybox.skyboxObject.SetActive(true);
 
-            // Iterate through children and enable them
-            enableDisableChildren(selectedHotspot, true);
+                for (int childIndex = 0; childIndex < skybox.sceneObjects.Length; childIndex++)
+                {
+                    skybox.sceneObjects[childIndex].SetActive(false);
+                }
+
+                cameraTransform.position = Vector3.zero;
+                cameraTransform.rotation = Quaternion.identity;
+                alphaFadeValue = 1.2f;
+                rotateAroundObject = false;
+                rotationObject = null;
+                backButton.SetActive(true);
+                return;
+            }
         }
     }
 
@@ -285,18 +302,22 @@ public class TapInput : MonoBehaviour
             CameraPathButton camPath = hitObject.GetComponent<CameraPathButton>();
             if (camPath != null)
             {
-                for (int childIndex = 0; childIndex < camPath.objectsToDeselect.Length; childIndex++)
-                {
-                    camPath.objectsToDeselect[childIndex].SetActive(false);
-                }
+                // Try to play a fullscreen movie
+                Handheld.PlayFullScreenMovie("TestMovie.mp4", Color.black, FullScreenMovieControlMode.CancelOnInput);
 
-                camPath.path.gameObject.SetActive(true);
-                cameraTransform.transform.position = camPath.path.transform.GetChild(0).position;
-                cameraTransform.rotation = Quaternion.identity;
-                rotateAroundObject = false;
-                rotationObject = null;
-                alphaFadeValue = 1.0f;
-                cameraFollowMode = true;
+
+                //for (int childIndex = 0; childIndex < camPath.objectsToDeselect.Length; childIndex++)
+                //{
+                //    camPath.objectsToDeselect[childIndex].SetActive(false);
+                //}
+
+                //camPath.path.gameObject.SetActive(true);
+                //cameraTransform.transform.position = camPath.path.transform.GetChild(0).position;
+                //cameraTransform.rotation = Quaternion.identity;
+                //rotateAroundObject = false;
+                //rotationObject = null;
+                //alphaFadeValue = 1.0f;
+                //cameraFollowMode = true;
             }
         }
         else
