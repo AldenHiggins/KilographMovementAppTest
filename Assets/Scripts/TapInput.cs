@@ -174,7 +174,6 @@ public class TapInput : MonoBehaviour
                 return;
             }
 
-            print("Got here!!");
             // If the user is in skyboxMode wait for tap then bring up the back button
             if (skyboxMode)
             {
@@ -209,7 +208,6 @@ public class TapInput : MonoBehaviour
 
     void selectBackButton()
     {
-        print("Got in here!!");
         SkyboxButton backSkybox = backButton.GetComponent<SkyboxButton>();
 
         rotationObject = mainRotationObject;
@@ -270,29 +268,43 @@ public class TapInput : MonoBehaviour
         int layerMask = 1 << 5; // UI
         if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask))
         {
-            print("Raycast hit!!");
             GameObject hitObject = hit.collider.gameObject;
 
+            // If a skybox button has been hit enter skybox mode
             SkyboxButton skybox = hitObject.GetComponent<SkyboxButton>();
-
-            if (skybox == null)
+            if (skybox != null)
             {
+                // Enable the skybox
+                skyboxMode = true;
+                skybox.skyboxObject.SetActive(true);
+
+                for (int childIndex = 0; childIndex < skybox.sceneObjects.Length; childIndex++)
+                {
+                    skybox.sceneObjects[childIndex].SetActive(false);
+                }
+
+                cameraTransform.position = Vector3.zero;
+                cameraTransform.rotation = Quaternion.identity;
+
+                rotateAroundObject = false;
                 return;
             }
 
-            // Enable the skybox
-            skyboxMode = true;
-            skybox.skyboxObject.SetActive(true);
-
-            for (int childIndex = 0; childIndex < skybox.sceneObjects.Length; childIndex++)
+            // If camera mode has been hit enter camera mode
+            CameraPathButton camPath = hitObject.GetComponent<CameraPathButton>();
+            if (camPath != null)
             {
-                skybox.sceneObjects[childIndex].SetActive(false);
+                for (int childIndex = 0; childIndex < camPath.objectsToDeselect.Length; childIndex++)
+                {
+                    camPath.objectsToDeselect[childIndex].SetActive(false);
+                }
+
+                camPath.path.gameObject.SetActive(true);
+                cameraTransform.transform.position = camPath.path.transform.GetChild(0).position;
+                rotateAroundObject = false;
+                rotationObject = null;
+                alphaFadeValue = 1.0f;
             }
-
-            cameraTransform.position = Vector3.zero;
-            cameraTransform.rotation = Quaternion.identity;
-
-            rotateAroundObject = false;
         }
         else
         {
