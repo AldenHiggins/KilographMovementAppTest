@@ -74,6 +74,9 @@ public class TapInput : MonoBehaviour
     public GameObject cameraBackButton;
     public GameObject videoButton;
 
+    // Button movement variablees
+    public Vector2 videoButtonTranslation;
+
     // State of the application
     private bool isRotating;
     private bool isMovingToTarget;
@@ -343,6 +346,9 @@ public class TapInput : MonoBehaviour
         // Disable the backbutton
         backButton.SetActive(false);
 
+        // Move the video button back
+        videoButton.GetComponent<RectTransform>().anchoredPosition -= videoButtonTranslation;
+
         for (int childIndex = 0; childIndex < backSkybox.sceneObjects.Length; childIndex++)
         {
             backSkybox.sceneObjects[childIndex].SetActive(true);
@@ -416,6 +422,12 @@ public class TapInput : MonoBehaviour
             cameraTransform.rotation = Quaternion.identity;
             alphaFadeValue = 1.2f;
             rotateAroundObject = false;
+            // Enable the skybox back button
+            backButton.SetActive(true);
+
+            // Move the video playing button
+            videoButton.GetComponent<RectTransform>().anchoredPosition += videoButtonTranslation;
+
             return;
         }
     }
