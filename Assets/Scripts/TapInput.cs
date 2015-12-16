@@ -73,6 +73,7 @@ public class TapInput : MonoBehaviour
     public GameObject backButton;
     public GameObject cameraBackButton;
     public GameObject videoButton;
+    public GameObject skyboxChoiceButtons;
 
     // Button movement variablees
     public Vector2 videoButtonTranslation;
@@ -82,7 +83,6 @@ public class TapInput : MonoBehaviour
     private bool isMovingToTarget;
     private bool skyboxMode;
     private bool cameraFollowMode;
-
 
     void Start()
     {
@@ -329,10 +329,17 @@ public class TapInput : MonoBehaviour
         currentYAroundObject = startingRotation.y;
         rotateAroundObject = true;
         skyboxMode = false;
-        // Disable the skybox
+        // Disable the skyboxes
+        for (int skyboxIndex = 0; skyboxIndex < backSkybox.skyboxObject.transform.childCount; skyboxIndex++)
+        {
+            backSkybox.skyboxObject.transform.GetChild(skyboxIndex).gameObject.SetActive(false);
+        }
         backSkybox.skyboxObject.SetActive(false);
         // Disable the backbutton
         backButton.SetActive(false);
+
+        // Disable the skybox choices button
+        skyboxChoiceButtons.SetActive(false);
 
         // Move the video button back
         videoButton.GetComponent<RectTransform>().anchoredPosition -= videoButtonTranslation;
@@ -400,6 +407,7 @@ public class TapInput : MonoBehaviour
             // Enable the skybox
             skyboxMode = true;
             skybox.skyboxObject.SetActive(true);
+            skybox.skyboxObject.transform.GetChild(0).gameObject.SetActive(true);
 
             for (int childIndex = 0; childIndex < skybox.sceneObjects.Length; childIndex++)
             {
@@ -412,6 +420,8 @@ public class TapInput : MonoBehaviour
             rotateAroundObject = false;
             // Enable the skybox back button
             backButton.SetActive(true);
+            // Enable the skybox choice buttons
+            skyboxChoiceButtons.SetActive(true);
 
             // Move the video playing button
             videoButton.GetComponent<RectTransform>().anchoredPosition += videoButtonTranslation;

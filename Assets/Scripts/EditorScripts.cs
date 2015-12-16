@@ -11,53 +11,53 @@ public class EditorScripts
     ///////////////////////////////////////////////////////////////////////////
     ////////////////////////// GIF GENERATION   ///////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
-    //[MenuItem("Kilograph/Populate GIF")]
-    //public static void populateGif()
-    //{
-    //    Get the current path that the user has navigated to in order to generate a skybox there
-    //    string path = getSelectedPathOrFallback();
+    [MenuItem("Kilograph/Populate GIF")]
+    public static void populateGif()
+    {
+        //Get the current path that the user has navigated to in order to generate a skybox there
+        string path = getSelectedPathOrFallback();
 
-    //    Debug.Log("===========================");
-    //    Debug.Log("Populating a GIF from textures at path:");
-    //    Debug.Log(path);
+        Debug.Log("===========================");
+        Debug.Log("Populating a GIF from textures at path:");
+        Debug.Log(path);
 
-    //    GameObject selectedObj = Selection.activeGameObject;
-    //    Check to see if the user has selected an object
-    //    if (selectedObj == null)
-    //    {
-    //        Debug.LogError("You need to select a gif to populate in the scene!");
-    //        return;
-    //    }
-    //    Check to see if that object is an animated gif
-    //    AnimatedGIF gif = selectedObj.GetComponent<AnimatedGIF>();
-    //    if (gif == null)
-    //    {
-    //        Debug.LogError("The selected object: " + selectedObj.name + " doesn't have a gif script!");
-    //        return;
-    //    }
+        GameObject selectedObj = Selection.activeGameObject;
+        //Check to see if the user has selected an object
+        if (selectedObj == null)
+        {
+            Debug.LogError("You need to select a gif to populate in the scene!");
+            return;
+        }
+        //Check to see if that object is an animated gif
+        AnimatedGIF gif = selectedObj.GetComponent<AnimatedGIF>();
+        if (gif == null)
+        {
+            Debug.LogError("The selected object: " + selectedObj.name + " doesn't have a gif script!");
+            return;
+        }
 
-    //    Get the names of all the files in the current directory
-    //    string[] files = getFiles(path);
+        //Get the names of all the files in the current directory
+        string[] files = getFiles(path);
 
-    //    List<Texture2D> textures = returnTexturesFromFileList(files);
+        List<Texture2D> textures = returnTexturesFromFileList(files);
 
-    //    if (textures.Count == 0)
-    //    {
-    //        Debug.LogError("The selected folder doesn't have any images in it!");
-    //        return;
-    //    }
+        if (textures.Count == 0)
+        {
+            Debug.LogError("The selected folder doesn't have any images in it!");
+            return;
+        }
 
-    //    gif.frames = new Texture2D[textures.Count];
+        gif.frames = new Texture2D[textures.Count];
 
-    //    Set the frames
-    //    for (int textureIndex = 0; textureIndex < textures.Count; textureIndex++)
-    //    {
-    //        gif.frames[textureIndex] = textures[textureIndex];
-    //    }
+        //Set the frames
+        for (int textureIndex = 0; textureIndex < textures.Count; textureIndex++)
+        {
+            gif.frames[textureIndex] = textures[textureIndex];
+        }
 
-    //    Debug.Log("Done generating GIF");
-    //    Debug.Log("===========================");
-    //}
+        Debug.Log("Done generating GIF");
+        Debug.Log("===========================");
+    }
 
     static List<Texture2D> returnTexturesFromFileList(string[] files)
     {
