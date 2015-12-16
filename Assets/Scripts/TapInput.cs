@@ -194,20 +194,8 @@ public class TapInput : MonoBehaviour
                 return;
             }
 
-            // If the user is in skyboxMode wait for tap then bring up the back button
-            if (skyboxMode)
-            {
-                if (!backButton.activeSelf)
-                {
-                    backButton.SetActive(true);
-                }
-                else
-                {
-                    backButton.SetActive(false);
-                }
-            }
             // If the user is in camera follow mode wait for tap then bring up the back button
-            else if (cameraFollowMode)
+            if (cameraFollowMode)
             {
                 if (!cameraBackButton.activeSelf)
                 {
