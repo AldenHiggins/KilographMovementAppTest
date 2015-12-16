@@ -94,6 +94,8 @@ public class TapInput : MonoBehaviour
 
         // Adds a listener for when you click the back button
         backButton.GetComponent<Button>().onClick.AddListener(selectBackButton);
+        // Scale backButton based on screen
+        backButton.GetComponent<RectTransform>().sizeDelta = new Vector2(Screen.width / 3, Screen.height / 3);
     }
 
     void Update()
