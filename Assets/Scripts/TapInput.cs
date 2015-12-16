@@ -69,9 +69,10 @@ public class TapInput : MonoBehaviour
     private bool hotspotSelected;
     private GameObject selectedHotspot;
 
-    // Back button to exit out of cameraMode/skybox
+    // Button GameObjects
     public GameObject backButton;
     public GameObject cameraBackButton;
+    public GameObject videoButton;
 
     // State of the application
     private bool isRotating;
@@ -102,7 +103,7 @@ public class TapInput : MonoBehaviour
         }
 
         // Adds a listener for when you click the back button
-        backButton.GetComponent<Button>().onClick.AddListener(selectBackButton);
+        backButton.GetComponent<Button>().onClick.AddListener(skyboxBackButtonSelect);
         // Scale backButton based on screen
         //backButton.GetComponent<RectTransform>().sizeDelta = new Vector2(Screen.width / 3, Screen.height / 6);
 
@@ -110,6 +111,9 @@ public class TapInput : MonoBehaviour
         cameraBackButton.GetComponent<Button>().onClick.AddListener(selectCameraBackButton);
         // Scale backButton based on screen
         cameraBackButton.GetComponent<RectTransform>().sizeDelta = new Vector2(Screen.width / 3, Screen.height / 6);
+
+        // Add a listener to the video button
+        videoButton.GetComponent<Button>().onClick.AddListener(playVideoButton);
     }
 
     void Update()
@@ -245,27 +249,7 @@ public class TapInput : MonoBehaviour
                 return;
             }
 
-            // If a skybox button has been hit enter skybox mode
-            SkyboxButton skybox = hitObject.GetComponent<SkyboxButton>();
-            if (skybox != null)
-            {
-                // Enable the skybox
-                skyboxMode = true;
-                skybox.skyboxObject.SetActive(true);
-
-                for (int childIndex = 0; childIndex < skybox.sceneObjects.Length; childIndex++)
-                {
-                    skybox.sceneObjects[childIndex].SetActive(false);
-                }
-
-                cameraTransform.position = Vector3.zero;
-                cameraTransform.rotation = Quaternion.identity;
-                alphaFadeValue = 1.2f;
-                rotateAroundObject = false;
-                rotationObject = null;
-                backButton.SetActive(true);
-                return;
-            }
+            enableSkyboxMode(hitObject);
         }
     }
 
@@ -278,34 +262,12 @@ public class TapInput : MonoBehaviour
         {
             GameObject hitObject = hit.collider.gameObject;
 
-            // If a skybox button has been hit enter skybox mode
-            SkyboxButton skybox = hitObject.GetComponent<SkyboxButton>();
-            if (skybox != null)
-            {
-                // Enable the skybox
-                skyboxMode = true;
-                skybox.skyboxObject.SetActive(true);
-
-                for (int childIndex = 0; childIndex < skybox.sceneObjects.Length; childIndex++)
-                {
-                    skybox.sceneObjects[childIndex].SetActive(false);
-                }
-
-                cameraTransform.position = Vector3.zero;
-                cameraTransform.rotation = Quaternion.identity;
-                alphaFadeValue = 1.2f;
-                rotateAroundObject = false;
-                return;
-            }
+            enableSkyboxMode(hitObject);
 
             // If camera mode has been hit enter camera mode
             CameraPathButton camPath = hitObject.GetComponent<CameraPathButton>();
             if (camPath != null)
             {
-                // Try to play a fullscreen movie
-                Handheld.PlayFullScreenMovie("TestMovie.mp4", Color.black, FullScreenMovieControlMode.CancelOnInput);
-
-
                 //for (int childIndex = 0; childIndex < camPath.objectsToDeselect.Length; childIndex++)
                 //{
                 //    camPath.objectsToDeselect[childIndex].SetActive(false);
@@ -332,8 +294,14 @@ public class TapInput : MonoBehaviour
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////     BACK BUTTON CALLBACKS     ///////////////////////////////////
+    /////////////////////////////     BUTTON CALLBACKS     //////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////
+    void playVideoButton()
+    {
+        // Try to play a fullscreen movie
+        Handheld.PlayFullScreenMovie("TestMovie.mp4", Color.black, FullScreenMovieControlMode.CancelOnInput);
+    }
+
     void selectCameraBackButton()
     {
         CameraPathButton button = cameraBackButton.GetComponent<CameraPathButton>();
@@ -360,7 +328,7 @@ public class TapInput : MonoBehaviour
         alphaFadeValue = 1.2f;
     }
 
-    void selectBackButton()
+    void skyboxBackButtonSelect()
     {
         SkyboxButton backSkybox = backButton.GetComponent<SkyboxButton>();
 
@@ -429,6 +397,29 @@ public class TapInput : MonoBehaviour
     /////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////   HELPER FUNCTIONS   ///////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////
+    void enableSkyboxMode(GameObject skyboxObject)
+    {
+        // If a skybox button has been hit enter skybox mode
+        SkyboxButton skybox = skyboxObject.GetComponent<SkyboxButton>();
+        if (skybox != null)
+        {
+            // Enable the skybox
+            skyboxMode = true;
+            skybox.skyboxObject.SetActive(true);
+
+            for (int childIndex = 0; childIndex < skybox.sceneObjects.Length; childIndex++)
+            {
+                skybox.sceneObjects[childIndex].SetActive(false);
+            }
+
+            cameraTransform.position = Vector3.zero;
+            cameraTransform.rotation = Quaternion.identity;
+            alphaFadeValue = 1.2f;
+            rotateAroundObject = false;
+            return;
+        }
+    }
+
     void moveToRotationObject(Quaternion rotationAroundObject)
     {
         cameraTransform.position = rotationObject.transform.position + (rotationAroundObject * new Vector3(0.0f, 0.0f, rotateAroundObjectDistance));
