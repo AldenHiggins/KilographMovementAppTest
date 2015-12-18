@@ -70,7 +70,6 @@ public class TapInput : MonoBehaviour
     private GameObject selectedHotspot;
 
     // Button GameObjects
-    public GameObject backButton;
     public GameObject videoButton;
     public GameObject skyboxChoiceButtons;
     public GameObject splashScreenButton;
@@ -116,11 +115,6 @@ public class TapInput : MonoBehaviour
             currentXAroundObject = startingRotation.x;
             moveToRotationObject(Quaternion.Euler(startingRotation));
         }
-
-        // Adds a listener for when you click the back button
-        backButton.GetComponent<Button>().onClick.AddListener(skyboxBackButtonSelect);
-        // Scale backButton based on screen
-        //backButton.GetComponent<RectTransform>().sizeDelta = new Vector2(Screen.width / 3, Screen.height / 6);
 
         // Add a listener to the video button
         videoButton.GetComponent<Button>().onClick.AddListener(playVideoButton);
@@ -309,6 +303,9 @@ public class TapInput : MonoBehaviour
 
         GetComponent<Rigidbody>().velocity = Vector3.zero;
 
+        enterWalkthroughButton.GetComponent<Image>().sprite = enterWalkthroughButton.GetComponent<ButtonSwitching>().offSprite;
+        enterWalkthroughButton.GetComponent<Button>().interactable = true;
+
         alphaFadeValue = 1.2f;
 
 
@@ -323,6 +320,10 @@ public class TapInput : MonoBehaviour
         generalBackButton.GetComponent<Image>().sprite = generalBackButton.GetComponent<ButtonSwitching>().offSprite;
         generalBackButton.GetComponent<Button>().interactable = true;
         generalBackButton.GetComponent<Button>().onClick.AddListener(exitWalkthrough);
+
+
+        enterWalkthroughButton.GetComponent<Image>().sprite = enterWalkthroughButton.GetComponent<ButtonSwitching>().onSprite;
+        enterWalkthroughButton.GetComponent<Button>().interactable = false;
 
         cameraPath.GetComponent<FollowCameraPath>().StartCameraPath();
         
@@ -340,7 +341,7 @@ public class TapInput : MonoBehaviour
 
     void skyboxBackButtonSelect()
     {
-        SkyboxButton backSkybox = backButton.GetComponent<SkyboxButton>();
+        SkyboxButton backSkybox = generalBackButton.GetComponent<SkyboxButton>();
 
         rotationObject = mainRotationObject;
         moveToRotationObject(Quaternion.Euler(startingRotation));
@@ -354,13 +355,16 @@ public class TapInput : MonoBehaviour
             backSkybox.skyboxObject.transform.GetChild(skyboxIndex).gameObject.SetActive(false);
         }
         backSkybox.skyboxObject.SetActive(false);
-        // Disable the backbutton
-        backButton.SetActive(false);
 
         // Disable the skybox choices button
         skyboxChoiceButtons.SetActive(false);
 
-        enterSkyboxButton.SetActive(true);
+        enterSkyboxButton.GetComponent<Image>().sprite = enterSkyboxButton.GetComponent<ButtonSwitching>().offSprite;
+        enterSkyboxButton.GetComponent<Button>().interactable = true;
+
+
+        generalBackButton.GetComponent<Image>().sprite = generalBackButton.GetComponent<ButtonSwitching>().onSprite;
+        generalBackButton.GetComponent<Button>().interactable = false;
 
         // Move the video button back
         //videoButton.GetComponent<RectTransform>().anchoredPosition -= videoButtonTranslation;
@@ -444,13 +448,19 @@ public class TapInput : MonoBehaviour
             cameraTransform.rotation = Quaternion.identity;
             alphaFadeValue = 1.2f;
             rotateAroundObject = false;
-            // Enable the skybox back button
-            backButton.SetActive(true);
+
             // Enable the skybox choice buttons
             skyboxChoiceButtons.SetActive(true);
             skyboxChoiceButtons.transform.GetChild(0).gameObject.GetComponent<SkyboxSelectorButton>().chooseSkybox();
 
-            enterSkyboxButton.SetActive(false);
+            enterSkyboxButton.GetComponent<Image>().sprite = enterSkyboxButton.GetComponent<ButtonSwitching>().onSprite;
+            enterSkyboxButton.GetComponent<Button>().interactable = false;
+
+            generalBackButton.GetComponent<Image>().sprite = generalBackButton.GetComponent<ButtonSwitching>().offSprite;
+            generalBackButton.GetComponent<Button>().interactable = true;
+            generalBackButton.GetComponent<Button>().onClick.AddListener(skyboxBackButtonSelect);
+
+            //enterSkyboxButton.SetActive(false);
 
             // Move the video playing button
             //videoButton.GetComponent<RectTransform>().anchoredPosition += videoButtonTranslation;
