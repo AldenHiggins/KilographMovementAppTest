@@ -79,6 +79,8 @@ public class TapInput : MonoBehaviour
 
     // Enter skybox hotspot
     public GameObject skyboxHotspot;
+    public GameObject skyboxHotspot2;
+    public GameObject skyboxHotspot3;
 
     // Camera path object
     public GameObject cameraPath;
@@ -211,14 +213,6 @@ public class TapInput : MonoBehaviour
             // If the user is in camera follow mode wait for tap then bring up the back button
             if (cameraFollowMode)
             {
-                //if (secondTouch)
-                //{
-                //    generalBackButton.GetComponent<Image>().sprite = generalBackButton.GetComponent<ButtonSwitching>().onSprite;
-                //    generalBackButton.GetComponent<Button>().interactable = false;
-                //    exitWalkthrough();
-                //    secondTouch = false;
-                //}
-                //secondTouch = true;
                 
             }
             else
@@ -304,6 +298,8 @@ public class TapInput : MonoBehaviour
         cameraPath.SetActive(false);
 
         skyboxHotspot.SetActive(true);
+        skyboxHotspot2.SetActive(true);
+        skyboxHotspot3.SetActive(true);
 
         rotationObject = mainRotationObject;
         moveToRotationObject(Quaternion.Euler(startingRotation));
@@ -364,6 +360,8 @@ public class TapInput : MonoBehaviour
         }
 
         skyboxHotspot.SetActive(false);
+        skyboxHotspot2.SetActive(false);
+        skyboxHotspot3.SetActive(false);
     }
 
     void playVideoButton()
@@ -472,7 +470,7 @@ public class TapInput : MonoBehaviour
             // Enable the skybox
             skyboxMode = true;
             skybox.skyboxObject.SetActive(true);
-            skybox.skyboxObject.transform.GetChild(0).gameObject.SetActive(true);
+            skybox.skyboxObject.transform.GetChild(skybox.skyboxIndex).gameObject.SetActive(true);
 
             for (int childIndex = 0; childIndex < skybox.sceneObjects.Length; childIndex++)
             {
@@ -488,7 +486,7 @@ public class TapInput : MonoBehaviour
 
             // Enable the skybox choice buttons
             skyboxChoiceButtons.SetActive(true);
-            skyboxChoiceButtons.transform.GetChild(0).gameObject.GetComponent<SkyboxSelectorButton>().chooseSkybox();
+            skyboxChoiceButtons.transform.GetChild(skybox.skyboxIndex).gameObject.GetComponent<SkyboxSelectorButton>().chooseSkybox();
 
             enterSkyboxButton.GetComponent<Image>().sprite = enterSkyboxButton.GetComponent<ButtonSwitching>().onSprite;
             enterSkyboxButton.GetComponent<Button>().interactable = false;

@@ -5,4 +5,6 @@ public class SkyboxButton : MonoBehaviour
 {
     public GameObject[] sceneObjects;
     public GameObject skyboxObject;
+
+    public int skyboxIndex;
 }
