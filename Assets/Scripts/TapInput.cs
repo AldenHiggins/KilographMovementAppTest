@@ -362,7 +362,6 @@ public class TapInput : MonoBehaviour
         enterSkyboxButton.GetComponent<Image>().sprite = enterSkyboxButton.GetComponent<ButtonSwitching>().offSprite;
         enterSkyboxButton.GetComponent<Button>().interactable = true;
 
-
         generalBackButton.GetComponent<Image>().sprite = generalBackButton.GetComponent<ButtonSwitching>().onSprite;
         generalBackButton.GetComponent<Button>().interactable = false;
 
@@ -428,12 +427,15 @@ public class TapInput : MonoBehaviour
         enableSkyboxMode(enterSkyboxButton);
     }
 
+
     void enableSkyboxMode(GameObject skyboxObject)
     {
         // If a skybox button has been hit enter skybox mode
         SkyboxButton skybox = skyboxObject.GetComponent<SkyboxButton>();
         if (skybox != null)
         {
+            GetComponent<Rigidbody>().velocity = Vector3.zero;
+
             // Enable the skybox
             skyboxMode = true;
             skybox.skyboxObject.SetActive(true);
@@ -455,6 +457,10 @@ public class TapInput : MonoBehaviour
 
             enterSkyboxButton.GetComponent<Image>().sprite = enterSkyboxButton.GetComponent<ButtonSwitching>().onSprite;
             enterSkyboxButton.GetComponent<Button>().interactable = false;
+
+            enterWalkthroughButton.GetComponent<Image>().sprite = enterWalkthroughButton.GetComponent<ButtonSwitching>().offSprite;
+            enterWalkthroughButton.GetComponent<Button>().interactable = true;
+            cameraPath.SetActive(false);
 
             generalBackButton.GetComponent<Image>().sprite = generalBackButton.GetComponent<ButtonSwitching>().offSprite;
             generalBackButton.GetComponent<Button>().interactable = true;
