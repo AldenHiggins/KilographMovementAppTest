@@ -317,6 +317,11 @@ public class TapInput : MonoBehaviour
 
         skyboxHotspot.SetActive(false);
 
+        
+
+
+
+
         generalBackButton.GetComponent<Image>().sprite = generalBackButton.GetComponent<ButtonSwitching>().offSprite;
         generalBackButton.GetComponent<Button>().interactable = true;
         generalBackButton.GetComponent<Button>().onClick.AddListener(exitWalkthrough);
@@ -325,12 +330,34 @@ public class TapInput : MonoBehaviour
         enterWalkthroughButton.GetComponent<Image>().sprite = enterWalkthroughButton.GetComponent<ButtonSwitching>().onSprite;
         enterWalkthroughButton.GetComponent<Button>().interactable = false;
 
+        enterSkyboxButton.GetComponent<Image>().sprite = enterSkyboxButton.GetComponent<ButtonSwitching>().offSprite;
+        enterSkyboxButton.GetComponent<Button>().interactable = true;
+
         cameraPath.GetComponent<FollowCameraPath>().StartCameraPath();
         
         rotateAroundObject = false;
         rotationObject = null;
         alphaFadeValue = 1.0f;
         cameraFollowMode = true;
+
+        //////////////////////////
+        // EXIT OUT OF SKYBOX MODE
+        //////////////////////////
+        SkyboxButton backSkybox = generalBackButton.GetComponent<SkyboxButton>();
+        // Disable the skybox choices button
+        skyboxChoiceButtons.SetActive(false);
+        skyboxMode = false;
+        // Disable the skyboxes
+        for (int skyboxIndex = 0; skyboxIndex < backSkybox.skyboxObject.transform.childCount; skyboxIndex++)
+        {
+            backSkybox.skyboxObject.transform.GetChild(skyboxIndex).gameObject.SetActive(false);
+        }
+        backSkybox.skyboxObject.SetActive(false);
+
+        for (int childIndex = 0; childIndex < backSkybox.sceneObjects.Length; childIndex++)
+        {
+            backSkybox.sceneObjects[childIndex].SetActive(true);
+        }
     }
 
     void playVideoButton()
