@@ -71,11 +71,18 @@ public class TapInput : MonoBehaviour
 
     // Button GameObjects
     public GameObject backButton;
-    public GameObject cameraBackButton;
     public GameObject videoButton;
     public GameObject skyboxChoiceButtons;
     public GameObject splashScreenButton;
     public GameObject enterSkyboxButton;
+    public GameObject enterWalkthroughButton;
+    public GameObject generalBackButton;
+
+    // Enter skybox hotspot
+    public GameObject skyboxHotspot;
+
+    // Camera path object
+    public GameObject cameraPath;
 
     // Splash Screen Object
     public GameObject splashScreen;
@@ -115,18 +122,19 @@ public class TapInput : MonoBehaviour
         // Scale backButton based on screen
         //backButton.GetComponent<RectTransform>().sizeDelta = new Vector2(Screen.width / 3, Screen.height / 6);
 
-        // Adds a listener for when you click the back button in camera follow mode
-        cameraBackButton.GetComponent<Button>().onClick.AddListener(selectCameraBackButton);
-        // Scale backButton based on screen
-        cameraBackButton.GetComponent<RectTransform>().sizeDelta = new Vector2(Screen.width / 3, Screen.height / 6);
-
         // Add a listener to the video button
         videoButton.GetComponent<Button>().onClick.AddListener(playVideoButton);
 
         // Add a listener to the skybox enter button
         //enableSkyboxMode
         enterSkyboxButton.GetComponent<Button>().onClick.AddListener(hitSkyboxButton);
-    }
+
+        // Add listeners to the walkthrough buttons
+        enterWalkthroughButton.GetComponent<Button>().onClick.AddListener(enterWalkthrough);
+
+
+        //generalBackButton.GetComponent<Button>().onClick.RemoveAllListeners();
+}
 
     void Update()
     {
@@ -206,14 +214,8 @@ public class TapInput : MonoBehaviour
             // If the user is in camera follow mode wait for tap then bring up the back button
             if (cameraFollowMode)
             {
-                if (!cameraBackButton.activeSelf)
-                {
-                    cameraBackButton.SetActive(true);
-                }
-                else
-                {
-                    cameraBackButton.SetActive(false);
-                }
+
+
             }
             else
             {
@@ -252,6 +254,10 @@ public class TapInput : MonoBehaviour
                 alphaFadeValue = 1.2f;
                 videoButton.SetActive(true);
                 enterSkyboxButton.SetActive(true);
+                enterWalkthroughButton.SetActive(true);
+                generalBackButton.SetActive(true);
+                generalBackButton.GetComponent<Image>().sprite = generalBackButton.GetComponent<ButtonSwitching>().onSprite;
+                generalBackButton.GetComponent<Button>().interactable = false;
             }
 
             // Don't do anything if this hotspot is already selected
@@ -274,24 +280,6 @@ public class TapInput : MonoBehaviour
             GameObject hitObject = hit.collider.gameObject;
 
             enableSkyboxMode(hitObject);
-
-            // If camera mode has been hit enter camera mode
-            CameraPathButton camPath = hitObject.GetComponent<CameraPathButton>();
-            if (camPath != null)
-            {
-                //for (int childIndex = 0; childIndex < camPath.objectsToDeselect.Length; childIndex++)
-                //{
-                //    camPath.objectsToDeselect[childIndex].SetActive(false);
-                //}
-
-                //camPath.path.gameObject.SetActive(true);
-                //cameraTransform.transform.position = camPath.path.transform.GetChild(0).position;
-                //cameraTransform.rotation = Quaternion.identity;
-                //rotateAroundObject = false;
-                //rotationObject = null;
-                //alphaFadeValue = 1.0f;
-                //cameraFollowMode = true;
-            }
         }
         else
         {
@@ -307,36 +295,47 @@ public class TapInput : MonoBehaviour
     /////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////     BUTTON CALLBACKS     //////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////
-    void playVideoButton()
+    void exitWalkthrough()
     {
-        // Try to play a fullscreen movie
-        Handheld.PlayFullScreenMovie("TestMovie.mp4", Color.black, FullScreenMovieControlMode.CancelOnInput);
-    }
+        cameraPath.SetActive(false);
 
-    void selectCameraBackButton()
-    {
-        CameraPathButton button = cameraBackButton.GetComponent<CameraPathButton>();
+        skyboxHotspot.SetActive(true);
 
         rotationObject = mainRotationObject;
         moveToRotationObject(Quaternion.Euler(startingRotation));
         currentXAroundObject = startingRotation.x;
         currentYAroundObject = startingRotation.y;
         rotateAroundObject = true;
-        cameraFollowMode = false;
 
-        // Disable the path
-        button.path.gameObject.SetActive(false);
-        cameraBackButton.SetActive(false);
-
-        // Enable all the hotspots
-        for (int childIndex = 0; childIndex < button.objectsToDeselect.Length; childIndex++)
-        {
-            button.objectsToDeselect[childIndex].SetActive(true);
-        }
-
-        // Remove all velocity from the rigidbody
         GetComponent<Rigidbody>().velocity = Vector3.zero;
+
         alphaFadeValue = 1.2f;
+
+
+    }
+
+    void enterWalkthrough()
+    {
+        cameraPath.SetActive(true);
+
+        skyboxHotspot.SetActive(false);
+
+        generalBackButton.GetComponent<Image>().sprite = generalBackButton.GetComponent<ButtonSwitching>().offSprite;
+        generalBackButton.GetComponent<Button>().interactable = true;
+        generalBackButton.GetComponent<Button>().onClick.AddListener(exitWalkthrough);
+
+        cameraPath.GetComponent<FollowCameraPath>().StartCameraPath();
+        
+        rotateAroundObject = false;
+        rotationObject = null;
+        alphaFadeValue = 1.0f;
+        cameraFollowMode = true;
+    }
+
+    void playVideoButton()
+    {
+        // Try to play a fullscreen movie
+        Handheld.PlayFullScreenMovie("TestMovie.mp4", Color.black, FullScreenMovieControlMode.CancelOnInput);
     }
 
     void skyboxBackButtonSelect()
