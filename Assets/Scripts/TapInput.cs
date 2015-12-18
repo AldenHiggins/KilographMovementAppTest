@@ -75,6 +75,7 @@ public class TapInput : MonoBehaviour
     public GameObject videoButton;
     public GameObject skyboxChoiceButtons;
     public GameObject splashScreenButton;
+    public GameObject enterSkyboxButton;
 
     // Splash Screen Object
     public GameObject splashScreen;
@@ -121,6 +122,10 @@ public class TapInput : MonoBehaviour
 
         // Add a listener to the video button
         videoButton.GetComponent<Button>().onClick.AddListener(playVideoButton);
+
+        // Add a listener to the skybox enter button
+        //enableSkyboxMode
+        enterSkyboxButton.GetComponent<Button>().onClick.AddListener(hitSkyboxButton);
     }
 
     void Update()
@@ -246,6 +251,7 @@ public class TapInput : MonoBehaviour
                 Destroy(splashScreen);
                 alphaFadeValue = 1.2f;
                 videoButton.SetActive(true);
+                enterSkyboxButton.SetActive(true);
             }
 
             // Don't do anything if this hotspot is already selected
@@ -355,8 +361,10 @@ public class TapInput : MonoBehaviour
         // Disable the skybox choices button
         skyboxChoiceButtons.SetActive(false);
 
+        enterSkyboxButton.SetActive(true);
+
         // Move the video button back
-        videoButton.GetComponent<RectTransform>().anchoredPosition -= videoButtonTranslation;
+        //videoButton.GetComponent<RectTransform>().anchoredPosition -= videoButtonTranslation;
 
         for (int childIndex = 0; childIndex < backSkybox.sceneObjects.Length; childIndex++)
         {
@@ -412,6 +420,11 @@ public class TapInput : MonoBehaviour
     /////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////   HELPER FUNCTIONS   ///////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////
+    void hitSkyboxButton()
+    {
+        enableSkyboxMode(enterSkyboxButton);
+    }
+
     void enableSkyboxMode(GameObject skyboxObject)
     {
         // If a skybox button has been hit enter skybox mode
@@ -436,9 +449,10 @@ public class TapInput : MonoBehaviour
             backButton.SetActive(true);
             // Enable the skybox choice buttons
             skyboxChoiceButtons.SetActive(true);
+            enterSkyboxButton.SetActive(false);
 
             // Move the video playing button
-            videoButton.GetComponent<RectTransform>().anchoredPosition += videoButtonTranslation;
+            //videoButton.GetComponent<RectTransform>().anchoredPosition += videoButtonTranslation;
 
             return;
         }
