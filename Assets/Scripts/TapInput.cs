@@ -449,6 +449,8 @@ public class TapInput : MonoBehaviour
             backButton.SetActive(true);
             // Enable the skybox choice buttons
             skyboxChoiceButtons.SetActive(true);
+            skyboxChoiceButtons.transform.GetChild(0).gameObject.GetComponent<SkyboxSelectorButton>().chooseSkybox();
+
             enterSkyboxButton.SetActive(false);
 
             // Move the video playing button
