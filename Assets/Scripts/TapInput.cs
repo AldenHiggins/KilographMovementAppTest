@@ -131,6 +131,7 @@ public class TapInput : MonoBehaviour
         // Add listeners to the walkthrough buttons
         enterWalkthroughButton.GetComponent<Button>().onClick.AddListener(enterWalkthrough);
 
+        // Resize all of the buttons based on the screen size
         float buttonWidth = (Screen.width * 230.0f) / 2560.0f;
         float buttonHeight = (Screen.height * 130.0f) / 1440.0f;
 
@@ -159,6 +160,17 @@ public class TapInput : MonoBehaviour
         enterSkyboxButton.GetComponent<RectTransform>().sizeDelta = new Vector2(buttonWidth, buttonHeight);
         enterSkyboxButton.transform.GetChild(0).GetComponent<Text>().resizeTextMaxSize = (int)(52 * Screen.width / 2560.0f);
         enterSkyboxButton.transform.GetChild(0).GetComponent<RectTransform>().anchoredPosition = new Vector2(0.0f, (-90 * Screen.height / 1440.0f));
+
+        // Resize the skybox buttons based on screen size
+        skyboxChoiceButtons.GetComponent<RectTransform>().anchoredPosition = new Vector2(0.0f, 150.0f * Screen.height / 1440.0f);
+        skyboxChoiceButtons.transform.GetChild(0).gameObject.GetComponent<RectTransform>().sizeDelta = new Vector2(250.0f * Screen.width / 2560.0f, 200.0f * Screen.height / 1440.0f);
+        skyboxChoiceButtons.transform.GetChild(0).gameObject.GetComponent<RectTransform>().anchoredPosition = new Vector2(-2.0f * (250.0f * Screen.width / 2560.0f), 0.0f);
+
+        skyboxChoiceButtons.transform.GetChild(1).gameObject.GetComponent<RectTransform>().sizeDelta = new Vector2(250.0f * Screen.width / 2560.0f, 200.0f * Screen.height / 1440.0f);
+        skyboxChoiceButtons.transform.GetChild(1).gameObject.GetComponent<RectTransform>().anchoredPosition = new Vector2(0.0f, 0.0f);
+
+        skyboxChoiceButtons.transform.GetChild(2).gameObject.GetComponent<RectTransform>().sizeDelta = new Vector2(250.0f * Screen.width / 2560.0f, 200.0f * Screen.height / 1440.0f);
+        skyboxChoiceButtons.transform.GetChild(2).gameObject.GetComponent<RectTransform>().anchoredPosition = new Vector2(2.0f * (250.0f * Screen.width / 2560.0f), 0.0f);
 
 
         //generalBackButton.GetComponent<Button>().onClick.RemoveAllListeners();
