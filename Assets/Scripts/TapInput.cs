@@ -175,7 +175,10 @@ public class TapInput : MonoBehaviour
             }
             else
             {
-                Rotate();
+                if (!cameraFollowMode)
+                {
+                    Rotate();
+                }
             }
         }
     }
@@ -484,6 +487,8 @@ public class TapInput : MonoBehaviour
             cameraTransform.rotation = Quaternion.identity;
             alphaFadeValue = 1.2f;
             rotateAroundObject = false;
+
+            cameraFollowMode = false;
 
             // Enable the skybox choice buttons
             skyboxChoiceButtons.SetActive(true);
