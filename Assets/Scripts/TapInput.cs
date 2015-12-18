@@ -74,6 +74,10 @@ public class TapInput : MonoBehaviour
     public GameObject cameraBackButton;
     public GameObject videoButton;
     public GameObject skyboxChoiceButtons;
+    public GameObject splashScreenButton;
+
+    // Splash Screen Object
+    public GameObject splashScreen;
 
     // Button movement variablees
     public Vector2 videoButtonTranslation;
@@ -233,6 +237,16 @@ public class TapInput : MonoBehaviour
         if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask))
         {
             GameObject hitObject = hit.collider.gameObject;
+
+            // Check to see if we hit the initial splash screen hotspot
+            if (hitObject == splashScreenButton)
+            {
+                // Disable button and splash screen
+                Destroy(splashScreenButton);
+                Destroy(splashScreen);
+                alphaFadeValue = 1.2f;
+                videoButton.SetActive(true);
+            }
 
             // Don't do anything if this hotspot is already selected
             if (gameObject == rotationObject)
