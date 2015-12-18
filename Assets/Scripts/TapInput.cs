@@ -300,6 +300,7 @@ public class TapInput : MonoBehaviour
         currentXAroundObject = startingRotation.x;
         currentYAroundObject = startingRotation.y;
         rotateAroundObject = true;
+        cameraFollowMode = false;
 
         GetComponent<Rigidbody>().velocity = Vector3.zero;
 
@@ -314,12 +315,6 @@ public class TapInput : MonoBehaviour
     void enterWalkthrough()
     {
         cameraPath.SetActive(true);
-
-        skyboxHotspot.SetActive(false);
-
-        
-
-
 
 
         generalBackButton.GetComponent<Image>().sprite = generalBackButton.GetComponent<ButtonSwitching>().offSprite;
@@ -358,6 +353,8 @@ public class TapInput : MonoBehaviour
         {
             backSkybox.sceneObjects[childIndex].SetActive(true);
         }
+
+        skyboxHotspot.SetActive(false);
     }
 
     void playVideoButton()
