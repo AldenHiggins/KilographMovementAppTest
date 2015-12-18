@@ -95,6 +95,9 @@ public class TapInput : MonoBehaviour
     private bool skyboxMode;
     private bool cameraFollowMode;
 
+    // Panorama overview mode variables
+    public GameObject overviewCameraPosition;
+
     void Start()
     {
         mainRotationObject = rotationObject;
@@ -175,10 +178,7 @@ public class TapInput : MonoBehaviour
             }
             else
             {
-                if (!cameraFollowMode)
-                {
-                    Rotate();
-                }
+                Rotate();
             }
         }
     }
@@ -196,8 +196,6 @@ public class TapInput : MonoBehaviour
         }
     }
 
-    private bool secondTouch;
-
     void OnTouchEnded(int fingerId)
     {
         rightFingerId = -1;
@@ -213,14 +211,14 @@ public class TapInput : MonoBehaviour
             // If the user is in camera follow mode wait for tap then bring up the back button
             if (cameraFollowMode)
             {
-                if (secondTouch)
-                {
-                    generalBackButton.GetComponent<Image>().sprite = generalBackButton.GetComponent<ButtonSwitching>().onSprite;
-                    generalBackButton.GetComponent<Button>().interactable = false;
-                    exitWalkthrough();
-                    secondTouch = false;
-                }
-                secondTouch = true;
+                //if (secondTouch)
+                //{
+                //    generalBackButton.GetComponent<Image>().sprite = generalBackButton.GetComponent<ButtonSwitching>().onSprite;
+                //    generalBackButton.GetComponent<Button>().interactable = false;
+                //    exitWalkthrough();
+                //    secondTouch = false;
+                //}
+                //secondTouch = true;
                 
             }
             else
@@ -303,7 +301,6 @@ public class TapInput : MonoBehaviour
     /////////////////////////////////////////////////////////////////////////////////////////////
     void exitWalkthrough()
     {
-        secondTouch = false;
         cameraPath.SetActive(false);
 
         skyboxHotspot.SetActive(true);
@@ -329,7 +326,6 @@ public class TapInput : MonoBehaviour
     {
         cameraPath.SetActive(true);
 
-        secondTouch = false;
         generalBackButton.GetComponent<Image>().sprite = generalBackButton.GetComponent<ButtonSwitching>().offSprite;
         generalBackButton.GetComponent<Button>().interactable = true;
         generalBackButton.GetComponent<Button>().onClick.AddListener(exitWalkthrough);

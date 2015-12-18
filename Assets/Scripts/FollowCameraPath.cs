@@ -96,7 +96,7 @@ public class FollowCameraPath : MonoBehaviour
         if (angularDifference.magnitude > 10)
         {
             angularDifference = angularDifference.normalized * angularSpeed * Time.deltaTime;
-            mainCamera.transform.rotation = Quaternion.Euler(mainCamera.transform.rotation.eulerAngles + angularDifference);
+            //mainCamera.transform.rotation = Quaternion.Euler(mainCamera.transform.rotation.eulerAngles + angularDifference);
         }
 	}
 }
