@@ -131,9 +131,38 @@ public class TapInput : MonoBehaviour
         // Add listeners to the walkthrough buttons
         enterWalkthroughButton.GetComponent<Button>().onClick.AddListener(enterWalkthrough);
 
+        float buttonWidth = (Screen.width * 230.0f) / 2560.0f;
+        float buttonHeight = (Screen.height * 130.0f) / 1440.0f;
+
+        float heightStep = Screen.height / 5.0f;
+
+        generalBackButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(generalBackButton.GetComponent<RectTransform>().anchoredPosition.x * Screen.width / 2560.0f,
+            heightStep);
+        generalBackButton.GetComponent<RectTransform>().sizeDelta = new Vector2(buttonWidth, buttonHeight);
+        generalBackButton.transform.GetChild(0).GetComponent<Text>().resizeTextMaxSize = (int)(60 * Screen.width / 2560.0f);
+        generalBackButton.transform.GetChild(0).GetComponent<RectTransform>().anchoredPosition = new Vector2(0.0f, (-90 * Screen.height / 1440.0f));
+
+        videoButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(videoButton.GetComponent<RectTransform>().anchoredPosition.x * Screen.width / 2560.0f,
+            heightStep * 2);
+        videoButton.GetComponent<RectTransform>().sizeDelta = new Vector2(buttonWidth, buttonHeight);
+        videoButton.transform.GetChild(0).GetComponent<Text>().resizeTextMaxSize = (int)(60 * Screen.width / 2560.0f);
+        videoButton.transform.GetChild(0).GetComponent<RectTransform>().anchoredPosition = new Vector2(0.0f, (-90 * Screen.height / 1440.0f));
+
+        enterWalkthroughButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(enterWalkthroughButton.GetComponent<RectTransform>().anchoredPosition.x * Screen.width / 2560.0f,
+            heightStep * 3);
+        enterWalkthroughButton.GetComponent<RectTransform>().sizeDelta = new Vector2(buttonWidth, buttonHeight);
+        enterWalkthroughButton.transform.GetChild(0).GetComponent<Text>().resizeTextMaxSize = (int)(60 * Screen.width / 2560.0f);
+        enterWalkthroughButton.transform.GetChild(0).GetComponent<RectTransform>().anchoredPosition = new Vector2(0.0f, (-90 * Screen.height / 1440.0f));
+
+        enterSkyboxButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(enterSkyboxButton.GetComponent<RectTransform>().anchoredPosition.x * Screen.width / 2560.0f,
+            heightStep * 4);
+        enterSkyboxButton.GetComponent<RectTransform>().sizeDelta = new Vector2(buttonWidth, buttonHeight);
+        enterSkyboxButton.transform.GetChild(0).GetComponent<Text>().resizeTextMaxSize = (int)(52 * Screen.width / 2560.0f);
+        enterSkyboxButton.transform.GetChild(0).GetComponent<RectTransform>().anchoredPosition = new Vector2(0.0f, (-90 * Screen.height / 1440.0f));
+
 
         //generalBackButton.GetComponent<Button>().onClick.RemoveAllListeners();
-}
+    }
 
     void Update()
     {
