@@ -408,7 +408,7 @@ public class TapInput : MonoBehaviour
     void playVideoButton()
     {
         // Try to play a fullscreen movie
-        Handheld.PlayFullScreenMovie("TestMovie.mp4", Color.black, FullScreenMovieControlMode.CancelOnInput);
+        Handheld.PlayFullScreenMovie("TestMovie2.mp4", Color.black, FullScreenMovieControlMode.CancelOnInput);
     }
 
     void skyboxBackButtonSelect()
