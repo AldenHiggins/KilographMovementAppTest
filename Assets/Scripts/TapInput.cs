@@ -16,18 +16,10 @@ using System.Collections;
 [RequireComponent(typeof(CharacterController))]
 public class TapInput : MonoBehaviour
 {
-    // Movement variables
-    private Vector3 targetPoint;
-    public float kMovementSpeed = 10;
-
     // Variables to support fading to black
     private float alphaFadeValue;
     public Texture2D blackTexture;
     public float fadeSpeed;
-
-    // The player's transform
-    private Transform ownTransform;
-    private CharacterController characterController;
 
     // Camera variables
     private Transform cameraTransform;
@@ -46,25 +38,6 @@ public class TapInput : MonoBehaviour
     public float cameraHeightChangeSpeed = 1;
     public float cameraWidthChangeSpeed = 1;
 
-    // Rotating around object variables
-    public bool rotateAroundObject = true;
-    private GameObject mainRotationObject;
-    public GameObject rotationObject;
-
-    public float rotationSpeedScaling;
-    public float rotateAroundObjectDistance;
-
-    private float currentXAroundObject = 0;
-    private float currentYAroundObject = 0;
-
-    public float objectRotationMaxX;
-    public float objectRotationMinX;
-
-    public float objectRotationMaxY;
-    public float objectRotationMinY;
-
-    public Vector3 startingRotation;
-
     // Variables to select hotspot UI features
     private bool hotspotSelected;
     private GameObject selectedHotspot;
@@ -73,45 +46,23 @@ public class TapInput : MonoBehaviour
     public GameObject skyboxChoiceButtons;
     public GameObject splashScreenButton;
 
-    // Camera path object
-    public GameObject cameraPath;
-
     // Splash Screen Object
     public GameObject splashScreen;
 
-    // Button movement variablees
-    public Vector2 videoButtonTranslation;
-
     // State of the application
     private bool isRotating;
-    private bool isMovingToTarget;
-    private bool skyboxMode;
-    private bool cameraFollowMode;
-
-    // Panorama overview mode variables
-    public GameObject overviewCameraPosition;
 
     // Skybox container
     public SkyboxButton skyboxContainer;
 
     void Start()
     {
-        mainRotationObject = rotationObject;
-        ownTransform = transform;
         cameraTransform = transform;
-        characterController = GetComponent<CharacterController>();
         _camera = GetComponent<Camera>();
 
         // Invert and scale the camera speed
         cameraHeightChangeSpeed = 10 * 1 / cameraHeightChangeSpeed;
         cameraWidthChangeSpeed = 10 * 1 / cameraWidthChangeSpeed;
-
-        if (rotateAroundObject)
-        {
-            currentYAroundObject = startingRotation.y;
-            currentXAroundObject = startingRotation.x;
-            moveToRotationObject(Quaternion.Euler(startingRotation));
-        }
 
         // Resize all of the buttons based on the screen size
         float buttonWidth = (Screen.width * 230.0f) / 2560.0f;
@@ -170,14 +121,7 @@ public class TapInput : MonoBehaviour
         // Perform rotations if necessary
         if (rightFingerId != -1 && isRotating)
         {
-            if (rotateAroundObject)
-            {
-                RotateAroundObject();
-            }
-            else
-            {
-                Rotate();
-            }
+            Rotate();
         }
     }
 
@@ -206,15 +150,7 @@ public class TapInput : MonoBehaviour
                 return;
             }
 
-            // If the user is in camera follow mode wait for tap then bring up the back button
-            if (cameraFollowMode)
-            {
-                
-            }
-            else
-            {
-                SelectHotspot(rightFingerStartPoint);
-            }
+            SelectHotspot(rightFingerStartPoint);
         }
     }
 
@@ -250,12 +186,6 @@ public class TapInput : MonoBehaviour
                 hitSkyboxButton();
             }
 
-            // Don't do anything if this hotspot is already selected
-            if (gameObject == rotationObject)
-            {
-                return;
-            }
-
             enableSkyboxMode(hitObject);
         }
     }
@@ -278,86 +208,12 @@ public class TapInput : MonoBehaviour
                 enableDisableChildren(selectedHotspot, false);
                 selectedHotspot = null;
             }
-            
         }
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
-    /////////////////////////////     BUTTON CALLBACKS     //////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    void exitWalkthrough()
-    {
-        cameraPath.SetActive(false);
-
-        rotationObject = mainRotationObject;
-        moveToRotationObject(Quaternion.Euler(startingRotation));
-        currentXAroundObject = startingRotation.x;
-        currentYAroundObject = startingRotation.y;
-        rotateAroundObject = true;
-        cameraFollowMode = false;
-
-        GetComponent<Rigidbody>().velocity = Vector3.zero;
-
-        alphaFadeValue = 1.2f;
-    }
-
-    void enterWalkthrough()
-    {
-        cameraPath.SetActive(true);
-
-        cameraPath.GetComponent<FollowCameraPath>().StartCameraPath();
-        
-        rotateAroundObject = false;
-        rotationObject = null;
-        alphaFadeValue = 1.0f;
-        cameraFollowMode = true;
-    }
-
-    void playVideoButton()
-    {
-        // Try to play a fullscreen movie
-        Handheld.PlayFullScreenMovie("TestMovie2.mp4", Color.black, FullScreenMovieControlMode.CancelOnInput);
-    }
-
-    void skyboxBackButtonSelect()
-    {
-        rotationObject = mainRotationObject;
-        moveToRotationObject(Quaternion.Euler(startingRotation));
-        currentXAroundObject = startingRotation.x;
-        currentYAroundObject = startingRotation.y;
-        rotateAroundObject = true;
-        skyboxMode = false;
-
-        // Disable the skybox choices button
-        skyboxChoiceButtons.SetActive(false);
-
-        alphaFadeValue = 1.2f;
-    }
-
-
-    /////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////       ROTATION       ///////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////
-    void RotateAroundObject()
-    {
-        Vector2 screenVectorChange = rightFingerCurrentPoint - rightFingerLastPoint;
-
-        // Scale the camera speed based on the screen height/width
-        float newCameraHeightSpeed = (cameraHeightChangeSpeed * rotationSpeedScaling) / 480 * Screen.height;
-        float newCameraWidthSpeed = (cameraWidthChangeSpeed * rotationSpeedScaling) / 850 * Screen.width;
-        currentXAroundObject += (screenVectorChange.y / newCameraHeightSpeed);
-        currentYAroundObject += (screenVectorChange.x / newCameraWidthSpeed);
-
-        // Clamp the X within given range
-        currentXAroundObject = Mathf.Clamp(currentXAroundObject, objectRotationMinX, objectRotationMaxX);
-
-        // Clamp the X within given range
-        currentYAroundObject = Mathf.Clamp(currentYAroundObject, objectRotationMinY, objectRotationMaxY);
-
-        moveToRotationObject(Quaternion.Euler(currentXAroundObject, currentYAroundObject, 0.0f));
-    }
-
-   
     void Rotate()
     {
         // Get the x,y change of the finger as it's sliding across the screen and rotate the camera based on that
@@ -376,7 +232,6 @@ public class TapInput : MonoBehaviour
         rightFingerLastPoint = rightFingerCurrentPoint;
     }
 
-
     /////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////   HELPER FUNCTIONS   ///////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -394,7 +249,6 @@ public class TapInput : MonoBehaviour
             GetComponent<Rigidbody>().velocity = Vector3.zero;
 
             // Enable the skybox
-            skyboxMode = true;
             skybox.skyboxObject.SetActive(true);
             skybox.skyboxObject.transform.GetChild(skybox.skyboxIndex).gameObject.SetActive(true);
 
@@ -406,24 +260,13 @@ public class TapInput : MonoBehaviour
             cameraTransform.position = Vector3.zero;
             cameraTransform.rotation = Quaternion.identity;
             alphaFadeValue = 1.2f;
-            rotateAroundObject = false;
-
-            cameraFollowMode = false;
 
             // Enable the skybox choice buttons
             skyboxChoiceButtons.SetActive(true);
             skyboxChoiceButtons.transform.GetChild(skybox.skyboxIndex).gameObject.GetComponent<SkyboxSelectorButton>().chooseSkybox();
 
-            cameraPath.SetActive(false);
-
             return;
         }
-    }
-
-    void moveToRotationObject(Quaternion rotationAroundObject)
-    {
-        cameraTransform.position = rotationObject.transform.position + (rotationAroundObject * new Vector3(0.0f, 0.0f, rotateAroundObjectDistance));
-        cameraTransform.LookAt(rotationObject.transform);
     }
 
     void enableDisableChildren(GameObject theObject, bool enable)
@@ -444,31 +287,5 @@ public class TapInput : MonoBehaviour
             GUI.color = new Color(alphaFadeValue, alphaFadeValue, alphaFadeValue, alphaFadeValue);
             GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), blackTexture);
         }
-    }
-
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////     TAP TO MOVE      ///////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    void SetTarget(Vector2 screenPos)
-    {
-        Ray ray = _camera.ScreenPointToRay(new Vector3(screenPos.x, screenPos.y));
-        RaycastHit hit;
-        int layerMask = 1 << 11; // Ground
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask))
-        {
-            targetPoint = hit.point;
-            isMovingToTarget = true;
-        }
-    }
-
-    void MoveToTarget()
-    {
-        Vector3 difference = targetPoint - ownTransform.position;
-
-        characterController.SimpleMove(difference.normalized * kMovementSpeed);
-
-        Vector3 horizontalDifference = new Vector3(difference.x, 0, difference.z);
-        if (horizontalDifference.magnitude < 0.1f)
-            isMovingToTarget = false;
     }
 }
