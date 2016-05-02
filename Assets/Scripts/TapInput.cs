@@ -72,7 +72,6 @@ public class TapInput : MonoBehaviour
     // Button GameObjects
     public GameObject skyboxChoiceButtons;
     public GameObject splashScreenButton;
-    public GameObject enterSkyboxButton;
 
     // Camera path object
     public GameObject cameraPath;
@@ -91,6 +90,9 @@ public class TapInput : MonoBehaviour
 
     // Panorama overview mode variables
     public GameObject overviewCameraPosition;
+
+    // Skybox container
+    public SkyboxButton skyboxContainer;
 
     void Start()
     {
@@ -111,20 +113,11 @@ public class TapInput : MonoBehaviour
             moveToRotationObject(Quaternion.Euler(startingRotation));
         }
 
-        // Add a listener to the skybox enter button
-        enterSkyboxButton.GetComponent<Button>().onClick.AddListener(hitSkyboxButton);
-
         // Resize all of the buttons based on the screen size
         float buttonWidth = (Screen.width * 230.0f) / 2560.0f;
         float buttonHeight = (Screen.height * 130.0f) / 1440.0f;
 
         float heightStep = Screen.height / 5.0f;
-
-        enterSkyboxButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(enterSkyboxButton.GetComponent<RectTransform>().anchoredPosition.x * Screen.width / 2560.0f,
-            heightStep * 4);
-        enterSkyboxButton.GetComponent<RectTransform>().sizeDelta = new Vector2(buttonWidth, buttonHeight);
-        enterSkyboxButton.transform.GetChild(0).GetComponent<Text>().resizeTextMaxSize = (int)(52 * Screen.width / 2560.0f);
-        enterSkyboxButton.transform.GetChild(0).GetComponent<RectTransform>().anchoredPosition = new Vector2(0.0f, (-90 * Screen.height / 1440.0f));
 
         // Resize the skybox buttons based on screen size
         skyboxChoiceButtons.GetComponent<RectTransform>().anchoredPosition = new Vector2(0.0f, 150.0f * Screen.height / 1440.0f);
@@ -253,7 +246,8 @@ public class TapInput : MonoBehaviour
                 Destroy(splashScreenButton);
                 Destroy(splashScreen);
                 alphaFadeValue = 1.2f;
-                enterSkyboxButton.SetActive(true);
+
+                hitSkyboxButton();
             }
 
             // Don't do anything if this hotspot is already selected
@@ -311,9 +305,6 @@ public class TapInput : MonoBehaviour
     {
         cameraPath.SetActive(true);
 
-        enterSkyboxButton.GetComponent<Image>().sprite = enterSkyboxButton.GetComponent<ButtonSwitching>().offSprite;
-        enterSkyboxButton.GetComponent<Button>().interactable = true;
-
         cameraPath.GetComponent<FollowCameraPath>().StartCameraPath();
         
         rotateAroundObject = false;
@@ -339,9 +330,6 @@ public class TapInput : MonoBehaviour
 
         // Disable the skybox choices button
         skyboxChoiceButtons.SetActive(false);
-
-        enterSkyboxButton.GetComponent<Image>().sprite = enterSkyboxButton.GetComponent<ButtonSwitching>().offSprite;
-        enterSkyboxButton.GetComponent<Button>().interactable = true;
 
         alphaFadeValue = 1.2f;
     }
@@ -394,7 +382,7 @@ public class TapInput : MonoBehaviour
     /////////////////////////////////////////////////////////////////////////////////////////////
     void hitSkyboxButton()
     {
-        enableSkyboxMode(enterSkyboxButton);
+        enableSkyboxMode(skyboxContainer.gameObject);
     }
 
     void enableSkyboxMode(GameObject skyboxObject)
@@ -425,9 +413,6 @@ public class TapInput : MonoBehaviour
             // Enable the skybox choice buttons
             skyboxChoiceButtons.SetActive(true);
             skyboxChoiceButtons.transform.GetChild(skybox.skyboxIndex).gameObject.GetComponent<SkyboxSelectorButton>().chooseSkybox();
-
-            enterSkyboxButton.GetComponent<Image>().sprite = enterSkyboxButton.GetComponent<ButtonSwitching>().onSprite;
-            enterSkyboxButton.GetComponent<Button>().interactable = false;
 
             cameraPath.SetActive(false);
 
